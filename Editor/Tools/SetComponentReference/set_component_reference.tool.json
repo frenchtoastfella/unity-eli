@@ -1,0 +1,30 @@
+{
+  "name": "set_component_reference",
+  "description": "Set a serialized field (reference) on a component attached to a GameObject. This works like dragging and dropping in the Unity Inspector. Can assign GameObjects, Components (e.g. TextMeshProUGUI, Rigidbody, Image), Materials, or any UnityEngine.Object to a [SerializeField] or public field. The tool finds the source GameObject by name and automatically resolves the correct component type to match the field.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "target_game_object": {
+        "type": "string",
+        "description": "The name of the GameObject that has the component with the field to set."
+      },
+      "target_component": {
+        "type": "string",
+        "description": "The type name of the component that contains the field, e.g. 'ScoreManager', 'PlayerController'."
+      },
+      "field_name": {
+        "type": "string",
+        "description": "The name of the serialized field to set, e.g. 'pointsCounter', 'playerRigidbody'. Use the C# field name, not the Inspector display name."
+      },
+      "source_game_object": {
+        "type": "string",
+        "description": "The name of the GameObject to assign (or to find the component on). The tool will automatically resolve the correct component from this GameObject to match the field type."
+      },
+      "source_component": {
+        "type": "string",
+        "description": "Optional. The specific component type name to get from the source GameObject, e.g. 'TextMeshProUGUI', 'Rigidbody'. If omitted, the tool will auto-detect the correct component type based on the field's type. Use this when the auto-detection picks the wrong component."
+      }
+    },
+    "required": ["target_game_object", "target_component", "field_name", "source_game_object"]
+  }
+}

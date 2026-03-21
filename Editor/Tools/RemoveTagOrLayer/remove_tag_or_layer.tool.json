@@ -1,0 +1,22 @@
+{
+  "name": "remove_tag_or_layer",
+  "description": "Remove a custom tag or layer from the Unity project. Built-in tags (Untagged, Respawn, Finish, EditorOnly, MainCamera, Player, GameController) and built-in layers (Default, TransparentFX, Ignore Raycast, Water, UI) cannot be removed. When removing a tag, you can optionally untag all GameObjects that are currently using it.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "tag": {
+        "type": "string",
+        "description": "The name of the custom tag to remove, e.g. 'Enemy', 'Collectible'."
+      },
+      "layer": {
+        "type": "string",
+        "description": "The name of the custom layer to remove, e.g. 'Enemies', 'Ground'."
+      },
+      "untag_game_objects": {
+        "type": "boolean",
+        "description": "Optional (default false). When true and removing a tag, all GameObjects in the scene that use this tag will be set to 'Untagged' before the tag is removed. This prevents orphaned tag references."
+      }
+    },
+    "required": []
+  }
+}

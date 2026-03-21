@@ -1,0 +1,34 @@
+{
+  "name": "set_renderer_color",
+  "description": "Set the color of a GameObject's Renderer (works with MeshRenderer and SkinnedMeshRenderer). This will find or create a flat color material using the 'Universal Render Pipeline/Lit' shader in 'Assets/Materials/FlatColor/' and assign it to the renderer. Materials are named 'M_FlatColor_{color_name}' and reused when the same color is requested.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object_name": {
+        "type": "string",
+        "description": "The name of the GameObject whose Renderer color to set."
+      },
+      "color_name": {
+        "type": "string",
+        "description": "A human-readable color name used for the material asset name, e.g. 'Red', 'Blue', 'DarkGreen', 'BrightYellow'. Use PascalCase with no spaces."
+      },
+      "r": {
+        "type": "number",
+        "description": "Red channel value (0.0 to 1.0)."
+      },
+      "g": {
+        "type": "number",
+        "description": "Green channel value (0.0 to 1.0)."
+      },
+      "b": {
+        "type": "number",
+        "description": "Blue channel value (0.0 to 1.0)."
+      },
+      "a": {
+        "type": "number",
+        "description": "Alpha channel value (0.0 to 1.0). Default 1.0 (fully opaque)."
+      }
+    },
+    "required": ["game_object_name", "color_name", "r", "g", "b"]
+  }
+}

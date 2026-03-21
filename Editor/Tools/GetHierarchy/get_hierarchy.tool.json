@@ -1,0 +1,26 @@
+{
+  "name": "get_hierarchy",
+  "description": "Get the Unity scene hierarchy as a tree. Returns GameObject names, active state, tags, layers, and optionally components. Shows total object counts and annotates truncated branches with child counts so you know where to drill deeper. Start with no arguments for an overview (depth 3, max 200 objects), then use 'root' to explore specific subtrees.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "Optional. Name of a GameObject to use as root. Only this object and its children are returned. Use this to drill into a subtree after seeing the overview."
+      },
+      "max_depth": {
+        "type": "integer",
+        "description": "Optional. Maximum depth to traverse (default: 3). Nodes at the depth limit show '(N children)' so you know what's below. Use 0 for root-level only."
+      },
+      "max_count": {
+        "type": "integer",
+        "description": "Optional. Maximum number of GameObjects to return (default: 200). When reached, output is truncated with a note. Increase for larger dumps or decrease to save context."
+      },
+      "include_components": {
+        "type": "boolean",
+        "description": "Optional (default false). When true, each GameObject also lists its components (e.g. Rigidbody, MeshRenderer). Transform is always omitted."
+      }
+    },
+    "required": []
+  }
+}

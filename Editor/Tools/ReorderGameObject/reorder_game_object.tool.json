@@ -1,0 +1,23 @@
+{
+  "name": "reorder_game_object",
+  "description": "Changes the position of a GameObject within its parent's children list (controls order in the Hierarchy panel). Use direction for relative moves or sibling_index for an absolute position.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "Name of the GameObject to reorder."
+      },
+      "direction": {
+        "type": "string",
+        "enum": ["up", "down", "first", "last"],
+        "description": "Move relative to current position. 'up' moves earlier in the list, 'down' moves later."
+      },
+      "sibling_index": {
+        "type": "integer",
+        "description": "Absolute sibling index to place the object at (0 = first child). Ignored if direction is set."
+      }
+    },
+    "required": ["game_object"]
+  }
+}

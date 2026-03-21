@@ -1,0 +1,19 @@
+{
+  "name": "set_quality_settings",
+  "description": "Gets the list of quality levels or sets the active quality level (Project Settings > Quality).",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["get_levels", "set_level"],
+        "description": "'get_levels' lists all quality levels with their indices. 'set_level' activates a level by index or name."
+      },
+      "level": {
+        "type": "string",
+        "description": "Quality level index (e.g. '2') or name (e.g. 'High'). Required for set_level."
+      }
+    },
+    "required": ["action"]
+  }
+}

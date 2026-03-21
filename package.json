@@ -1,0 +1,19 @@
+{
+  "name": "com.frenchtoastfella.unityeli",
+  "version": "1.0.0",
+  "displayName": "Unity Eli",
+  "description": "An AI assistant embedded directly in the Unity Editor, powered by Claude Code CLI.",
+  "unity": "2021.3",
+  "license": "MIT",
+  "author": {
+    "name": "frenchtoastfella"
+  },
+  "keywords": [
+    "ai",
+    "assistant",
+    "editor",
+    "mcp",
+    "claude"
+  ],
+  "hideInEditor": false
+}

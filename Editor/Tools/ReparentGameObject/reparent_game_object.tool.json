@@ -1,0 +1,22 @@
+{
+  "name": "reparent_game_object",
+  "description": "Changes the parent of a GameObject in the hierarchy. Set new_parent to an existing GameObject's name, or leave it empty to move the object to the scene root.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "Name of the GameObject to reparent."
+      },
+      "new_parent": {
+        "type": "string",
+        "description": "Name of the new parent GameObject. Leave empty or omit to move to scene root."
+      },
+      "world_position_stays": {
+        "type": "boolean",
+        "description": "If true (default), the world position/rotation/scale is preserved. If false, the local transform is kept (useful for UI objects)."
+      }
+    },
+    "required": ["game_object"]
+  }
+}

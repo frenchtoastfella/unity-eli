@@ -1,0 +1,26 @@
+{
+  "name": "create_prefab",
+  "description": "Create a prefab asset from a GameObject in the scene. The scene instance becomes linked to the prefab. Includes all components, children, and their settings.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the scene GameObject to save as a prefab."
+      },
+      "path": {
+        "type": "string",
+        "description": "Optional. Folder path for the prefab. Defaults to 'Assets/Prefabs'."
+      },
+      "file_name": {
+        "type": "string",
+        "description": "Optional. Prefab file name (without or with .prefab extension). Defaults to the GameObject's name."
+      },
+      "overwrite": {
+        "type": "boolean",
+        "description": "Optional (default false). If true, overwrites an existing prefab at the same path."
+      }
+    },
+    "required": ["game_object"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "set_physics_settings",
+  "description": "Sets physics simulation parameters (Project Settings > Physics). Supports gravity, bounce_threshold, sleep_threshold, default_contact_offset, and layer collision matrix.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "property": {
+        "type": "string",
+        "enum": ["gravity", "gravity_y", "bounce_threshold", "sleep_threshold", "default_contact_offset", "layer_collision"],
+        "description": "The physics setting to change. 'gravity_y' is shorthand to set only the Y component of gravity."
+      },
+      "value": {
+        "type": "string",
+        "description": "The new value. Format depends on property: gravity='0,-9.81,0' (Vector3); gravity_y='-20' (float); bounce_threshold/sleep_threshold/default_contact_offset=float; layer_collision='LayerA,LayerB,true' (true=ignore, false=collide)."
+      }
+    },
+    "required": ["property", "value"]
+  }
+}

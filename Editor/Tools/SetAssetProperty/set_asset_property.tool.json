@@ -1,0 +1,22 @@
+{
+  "name": "set_asset_property",
+  "description": "Set a serialized property on a project asset (ScriptableObject, Material, etc.) by its asset path. Supports bool, int, float, string, enum, Vector2, Vector3, Color, and object references.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "asset_path": {
+        "type": "string",
+        "description": "The asset path, e.g. 'Assets/Resources/UpgradeData.asset'."
+      },
+      "property": {
+        "type": "string",
+        "description": "The serialized field name, e.g. 'cost', 'upgradeName', 'damageMultiplier'."
+      },
+      "value": {
+        "type": "string",
+        "description": "The value to set as a string. For vectors use 'x,y,z', for colors use 'r,g,b,a', for object references use the asset path."
+      }
+    },
+    "required": ["asset_path", "property", "value"]
+  }
+}

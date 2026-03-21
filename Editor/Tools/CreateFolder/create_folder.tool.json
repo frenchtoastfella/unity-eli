@@ -1,0 +1,14 @@
+{
+  "name": "create_folder",
+  "description": "Creates a folder (and any missing parent folders) in the Unity project. Use forward slashes and start with 'Assets/'.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Full folder path starting with 'Assets/', e.g. 'Assets/Scripts/Enemies'."
+      }
+    },
+    "required": ["path"]
+  }
+}

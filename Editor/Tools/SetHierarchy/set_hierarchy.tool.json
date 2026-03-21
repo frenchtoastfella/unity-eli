@@ -1,0 +1,27 @@
+{
+  "name": "set_hierarchy",
+  "description": "Create or update a GameObject hierarchy from a text description. Matches the format of get_hierarchy output but with transform properties and components. Existing children with the same name are updated; missing ones are created. Use 'clean' to remove children not listed.\n\nGameObject lines: '- Name key:value key:value ...', indented 2 spaces per child level.\nComponent lines: '+ ComponentType prop=value prop=value', indented under their parent GameObject.\n\nWorld mode keys: pos:x,y,z  rot:x,y,z  scale:x,y,z  active:true/false  tag:TagName  layer:LayerName\nUI mode keys: pos:x,y  size:w,h  anchor:minX,minY,maxX,maxY  pivot:x,y  rot:z  scale:x,y,z  active:true/false\n\nComponent properties use '=' (not ':') to separate key and value. Use quotes for values with spaces: prop=\"my value\".\nFor scene object references, prefix with '@': target=@OtherGameObject or target=@OtherGameObject.ComponentType.\nReferences are resolved after all objects are created, so forward references within the hierarchy work.\n\nAll keys are optional — omitted keys keep current values (existing objects) or use defaults (new objects).\n\nExample (world with components):\n- Enemies\n  - Slime pos:0,0,0 tag:Enemy\n    + Rigidbody mass=2 drag=0.5\n    + BoxCollider size=1,1,1\n    + EnemyController health=100 speed=3.5 target=@Player\n  - Bat pos:5,3,0 tag:Enemy\n    + Rigidbody mass=0.5 useGravity=false\n    + SphereCollider radius=0.5\n\nExample (ui, root: 'Canvas'):\n- HUD anchor:0,0,1,1\n  - HealthBar pos:-100,30 size:200,20 anchor:0,1,0,1 pivot:0,1\n    + Image color=1,0,0,1\n    + Slider value=1 minValue=0 maxValue=1\n  - ScoreText pos:100,30 size:150,20\n    + TextMeshProUGUI text=\"Score: 0\" fontSize=24 color=1,1,1,1",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "hierarchy": {
+        "type": "string",
+        "description": "The hierarchy definition. GameObject lines start with '- Name' (after indentation) with optional key:value pairs for transforms. Component lines start with '+ ComponentType' with optional prop=value pairs. Indent 2 spaces per depth level. Use @GameObjectName for scene object references in component properties."
+      },
+      "root": {
+        "type": "string",
+        "description": "Optional. Parent GameObject under which the hierarchy is applied. If omitted, applies at scene root."
+      },
+      "mode": {
+        "type": "string",
+        "enum": ["world", "ui"],
+        "description": "Transform mode. 'world' (default): pos/rot/scale on Transform. 'ui': pos/size/anchor/pivot on RectTransform."
+      },
+      "clean": {
+        "type": "boolean",
+        "description": "Optional (default false). When true, destroys children of root (and each sub-parent) that are NOT listed in the hierarchy. Undoable."
+      }
+    },
+    "required": ["hierarchy"]
+  }
+}

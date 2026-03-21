@@ -1,0 +1,32 @@
+{
+  "name": "manage_build_scenes",
+  "description": "Manage the scene list in Editor Build Settings. Actions: 'list' (default) shows all scenes with indices; 'add' adds a scene; 'remove' removes by path or index; 'set' replaces the entire list with an ordered array; 'enable'/'disable' toggles a scene without removing it.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["list", "add", "remove", "set", "enable", "disable"],
+        "description": "The operation to perform. Default: 'list'."
+      },
+      "scene_path": {
+        "type": "string",
+        "description": "Asset path of a scene (e.g. 'Assets/Scenes/Main.unity'). Used by add, remove, enable, disable."
+      },
+      "index": {
+        "type": "integer",
+        "description": "For 'add': insert position (0-based). For 'remove': remove by index instead of path."
+      },
+      "enabled": {
+        "type": "boolean",
+        "description": "For 'add': whether the scene is enabled. Default: true."
+      },
+      "scenes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "For 'set': ordered array of scene asset paths. Replaces the entire build scene list. All scenes are enabled by default."
+      }
+    },
+    "required": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "set_component_property",
+  "description": "Set a serialized property value on a component attached to a GameObject. Works with any serialized field visible in the Unity Inspector: booleans, integers, floats, strings, enums, Vector2/3/4, Color, Rect, and LayerMask. For object/component references, use the 'set_component_reference' tool instead. Property names use the serialized field name (e.g. 'm_UseGravity', 'm_IsKinematic', 'm_Mass' for Rigidbody). The tool also tries to match common C# property names automatically (e.g. 'useGravity' will find 'm_UseGravity').",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the GameObject that has the component."
+      },
+      "component": {
+        "type": "string",
+        "description": "The type name of the component, e.g. 'Rigidbody', 'BoxCollider', 'AudioSource', 'PlayerController'."
+      },
+      "property": {
+        "type": "string",
+        "description": "The name of the property to set. Can use the C# property name (e.g. 'useGravity', 'isKinematic', 'mass') or the serialized field name (e.g. 'm_UseGravity'). The tool will try to find the correct match."
+      },
+      "value": {
+        "type": "string",
+        "description": "The value to set, as a string. Examples: 'true'/'false' for booleans, '1.5' for floats, '10' for integers, 'Continuous' for enums, '1,2,3' or '(1, 2, 3)' for Vector3."
+      }
+    },
+    "required": ["game_object", "component", "property", "value"]
+  }
+}

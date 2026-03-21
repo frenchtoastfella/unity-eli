@@ -1,0 +1,53 @@
+{
+  "name": "configure_animator_controller",
+  "description": "Modifies an existing AnimatorController: adds or removes states, parameters, and transitions. Operates on Layer 0 (base layer).",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Asset path of the existing .controller file, e.g. 'Assets/Animations/Player.controller'."
+      },
+      "action": {
+        "type": "string",
+        "enum": ["add_state", "remove_state", "add_parameter", "remove_parameter", "add_transition"],
+        "description": "The operation to perform."
+      },
+      "state_name": {
+        "type": "string",
+        "description": "Name of the state to add/remove, or the SOURCE state for add_transition."
+      },
+      "target_state": {
+        "type": "string",
+        "description": "Name of the DESTINATION state for add_transition."
+      },
+      "parameter_name": {
+        "type": "string",
+        "description": "Name of the parameter to add or remove."
+      },
+      "parameter_type": {
+        "type": "string",
+        "enum": ["Float", "Int", "Bool", "Trigger"],
+        "description": "Type of the parameter (for add_parameter). Default: Float."
+      },
+      "condition_parameter": {
+        "type": "string",
+        "description": "Parameter name to use as a transition condition (for add_transition)."
+      },
+      "condition_mode": {
+        "type": "string",
+        "enum": ["If", "IfNot", "Greater", "Less", "Equals", "NotEqual"],
+        "description": "Condition comparison mode (for add_transition with a condition_parameter)."
+      },
+      "condition_threshold": {
+        "type": "number",
+        "description": "Threshold value for Greater/Less/Equals/NotEqual conditions."
+      },
+      "has_exit_time": {
+        "type": "boolean",
+        "description": "Whether the transition uses exit time (default false, recommended for game transitions)."
+      }
+    },
+    "required": ["path", "action"]
+  }
+}

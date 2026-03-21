@@ -1,0 +1,35 @@
+{
+  "name": "create_canvas",
+  "description": "Create a UI Canvas GameObject in the current scene. The Canvas is set up with a CanvasScaler (Scale With Screen Size, 1920x1080 reference) and a GraphicRaycaster. This is required before creating any UI elements.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The name of the Canvas GameObject. Default 'Canvas'."
+      },
+      "render_mode": {
+        "type": "string",
+        "enum": ["ScreenSpaceOverlay", "ScreenSpaceCamera", "WorldSpace"],
+        "description": "The Canvas render mode. Default 'ScreenSpaceOverlay'."
+      },
+      "sort_order": {
+        "type": "integer",
+        "description": "The sorting order of the Canvas. Default 0."
+      },
+      "reference_resolution_x": {
+        "type": "number",
+        "description": "The reference resolution width for the CanvasScaler. Default 1920."
+      },
+      "reference_resolution_y": {
+        "type": "number",
+        "description": "The reference resolution height for the CanvasScaler. Default 1080."
+      },
+      "match_width_or_height": {
+        "type": "number",
+        "description": "CanvasScaler match value (0 = match width, 1 = match height, 0.5 = match both). Default 0.5."
+      }
+    },
+    "required": []
+  }
+}

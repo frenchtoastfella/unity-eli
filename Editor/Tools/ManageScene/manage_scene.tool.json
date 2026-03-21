@@ -1,0 +1,23 @@
+{
+  "name": "manage_scene",
+  "description": "Manage Unity scenes. Actions: 'status' shows the active scene and all loaded scenes; 'open' switches to a scene (saves current first by default); 'new' creates a new scene; 'save' saves all open scenes; 'close' unloads an additively loaded scene; 'load_additive' loads a scene alongside the current one. Always check 'status' first before operating on a scene to confirm which scene is active.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["status", "open", "new", "save", "close", "load_additive"],
+        "description": "The scene operation to perform. Default: 'status'."
+      },
+      "path": {
+        "type": "string",
+        "description": "Asset path to the scene file (e.g. 'Assets/Scenes/Level1.unity'). Required for open, new, close, and load_additive."
+      },
+      "save_current": {
+        "type": "boolean",
+        "description": "Whether to save the current scene before switching. Default true. Applies to 'open' and 'new' actions."
+      }
+    },
+    "required": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "delete_asset",
+  "description": "Delete an asset from the project (scripts, ScriptableObjects, materials, textures, etc.). The asset is moved to the OS trash so it can be recovered if needed.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "asset_path": {
+        "type": "string",
+        "description": "The asset path to delete, e.g. 'Assets/Resources/OldData.asset' or 'Assets/Scripts/Unused.cs'."
+      }
+    },
+    "required": ["asset_path"]
+  }
+}

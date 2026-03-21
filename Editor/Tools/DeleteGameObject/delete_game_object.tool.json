@@ -1,0 +1,14 @@
+{
+  "name": "delete_game_object",
+  "description": "Delete a GameObject from the scene. This also deletes all of its children. The deletion is undoable via Edit > Undo.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the GameObject to delete."
+      }
+    },
+    "required": ["game_object"]
+  }
+}

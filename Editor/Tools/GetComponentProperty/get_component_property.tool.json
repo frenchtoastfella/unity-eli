@@ -1,0 +1,22 @@
+{
+  "name": "get_component_property",
+  "description": "Read serialized property values from a component on a scene GameObject. Call with just game_object and component_type to list all properties and their values, or specify property_name to read a specific property. Property names support auto-matching (e.g. 'useGravity' will find 'm_UseGravity').",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the GameObject in the scene."
+      },
+      "component_type": {
+        "type": "string",
+        "description": "The type name of the component, e.g. 'Rigidbody', 'Camera', 'PlayerController'."
+      },
+      "property_name": {
+        "type": "string",
+        "description": "Optional. A specific property name to read. If omitted, all properties and their values are returned. Supports C# property names (e.g. 'useGravity') and serialized field names (e.g. 'm_UseGravity')."
+      }
+    },
+    "required": ["game_object", "component_type"]
+  }
+}

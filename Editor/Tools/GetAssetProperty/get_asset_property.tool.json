@@ -1,0 +1,18 @@
+{
+  "name": "get_asset_property",
+  "description": "Read serialized properties from a project asset (ScriptableObject, Material, etc.). Call with just the asset path to list all properties and their values, or specify a property name to read a single value.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "asset_path": {
+        "type": "string",
+        "description": "The asset path, e.g. 'Assets/Resources/UpgradeData.asset'."
+      },
+      "property": {
+        "type": "string",
+        "description": "Optional. A specific property name to read. If omitted, all properties and their values are returned."
+      }
+    },
+    "required": ["asset_path"]
+  }
+}

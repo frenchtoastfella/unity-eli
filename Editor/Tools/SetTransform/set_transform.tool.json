@@ -1,0 +1,27 @@
+{
+  "name": "set_transform",
+  "description": "Sets the position, rotation (euler angles), or scale of one or more GameObjects. Supports absolute (set to exact value) and relative (add to current value) modes. For multiple objects, separate names with commas.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_objects": {
+        "type": "string",
+        "description": "Name of a single GameObject, or a comma-separated list of names (e.g. 'Cube,Sphere,Enemy1')."
+      },
+      "channels": {
+        "type": "string",
+        "enum": ["position", "rotation", "scale", "position_rotation", "all"],
+        "description": "Which transform channels to apply. 'position_rotation' sets both position and rotation with the same x/y/z values. 'all' sets position, rotation, and scale."
+      },
+      "x": { "type": "number", "description": "X value for the selected channel(s)." },
+      "y": { "type": "number", "description": "Y value for the selected channel(s)." },
+      "z": { "type": "number", "description": "Z value for the selected channel(s)." },
+      "mode": {
+        "type": "string",
+        "enum": ["absolute", "relative"],
+        "description": "Whether to set the exact value ('absolute', default) or add to the current value ('relative')."
+      }
+    },
+    "required": ["game_objects", "channels"]
+  }
+}

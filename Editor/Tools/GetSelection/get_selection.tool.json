@@ -1,0 +1,18 @@
+{
+  "name": "get_selection",
+  "description": "Get info about the currently selected object(s) in the Unity Editor. Works with scene GameObjects, prefabs, scripts, ScriptableObjects, materials, textures, and any other asset. Call with no arguments for basic info, or use flags for more detail.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "include_components": {
+        "type": "boolean",
+        "description": "Optional (default false). For GameObjects, also list all components."
+      },
+      "include_properties": {
+        "type": "boolean",
+        "description": "Optional (default false). Also list serialized property values on components and assets."
+      }
+    },
+    "required": []
+  }
+}

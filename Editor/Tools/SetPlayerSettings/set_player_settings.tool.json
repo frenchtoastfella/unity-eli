@@ -1,0 +1,24 @@
+{
+  "name": "set_player_settings",
+  "description": "Sets player and build settings for the project (Project Settings > Player). Supports: company_name, product_name, version, bundle_id, default_orientation.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "property": {
+        "type": "string",
+        "enum": ["company_name", "product_name", "version", "bundle_id", "default_orientation"],
+        "description": "The setting to change."
+      },
+      "value": {
+        "type": "string",
+        "description": "The new value. For default_orientation, use: Portrait, PortraitUpsideDown, LandscapeRight, LandscapeLeft, AutoRotation."
+      },
+      "build_target": {
+        "type": "string",
+        "enum": ["Standalone", "Android", "iOS", "WebGL"],
+        "description": "Build target platform (only used for bundle_id). Default: Standalone."
+      }
+    },
+    "required": ["property", "value"]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "add_event_listener",
+  "description": "Wire a persistent listener on any UnityEvent (e.g. Button.onClick, Toggle.onValueChanged, Slider.onValueChanged, or custom UnityEvents on your own scripts). Adds a new persistent call entry that appears in the Inspector's event panel. The listener calls a method on a target component when the event fires.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the GameObject that has the component with the event."
+      },
+      "component_type": {
+        "type": "string",
+        "description": "Optional. The component type that contains the event (e.g. 'Button', 'Toggle', 'Slider'). If omitted, searches all components on the GameObject for the event."
+      },
+      "event_name": {
+        "type": "string",
+        "description": "The name of the UnityEvent field, e.g. 'onClick', 'onValueChanged'. Supports auto-matching of m_ prefix (e.g. 'onClick' finds 'm_OnClick')."
+      },
+      "target_game_object": {
+        "type": "string",
+        "description": "The name of the GameObject that has the target component to call."
+      },
+      "target_component_type": {
+        "type": "string",
+        "description": "The component type on the target GameObject that has the method to call, e.g. 'GameManager', 'AudioSource', 'Animator'."
+      },
+      "method_name": {
+        "type": "string",
+        "description": "The name of the method to call on the target component, e.g. 'Play', 'SetActive', 'OnButtonClicked'."
+      },
+      "argument": {
+        "type": "string",
+        "description": "Optional constant argument to pass to the method. Auto-detected as bool ('true'/'false'), int, float (must contain '.'), or string. Omit for void methods."
+      }
+    },
+    "required": ["game_object", "event_name", "target_game_object", "target_component_type", "method_name"]
+  }
+}

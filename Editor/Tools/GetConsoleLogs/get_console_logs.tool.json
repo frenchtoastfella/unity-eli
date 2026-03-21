@@ -1,0 +1,19 @@
+{
+  "name": "get_console_logs",
+  "description": "Read log entries from the Unity Editor console. Returns errors, warnings, and/or log messages. Useful for diagnosing compilation errors, runtime exceptions, or other issues reported in the console. Results are returned newest-first.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "filter": {
+        "type": "string",
+        "enum": ["all", "errors", "warnings", "logs"],
+        "description": "Optional. Which log types to include. 'errors' returns only errors and compiler errors, 'warnings' returns only warnings, 'logs' returns only info/debug messages, 'all' (default) returns everything."
+      },
+      "max_entries": {
+        "type": "integer",
+        "description": "Optional. Maximum number of log entries to return. Defaults to 50. Use a smaller number for quick checks or a larger number for thorough investigation."
+      }
+    },
+    "required": []
+  }
+}

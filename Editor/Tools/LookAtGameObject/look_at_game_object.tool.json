@@ -1,0 +1,18 @@
+{
+  "name": "look_at_game_object",
+  "description": "Make a GameObject's forward direction point toward another GameObject. This sets the rotation so that transform.forward faces the target. Useful for making cameras or objects face a specific target without following it at runtime.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "The name of the GameObject whose rotation should be changed to look at the target."
+      },
+      "target_game_object": {
+        "type": "string",
+        "description": "The name of the GameObject to look at."
+      }
+    },
+    "required": ["game_object", "target_game_object"]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "add_tag_or_layer",
+  "description": "Add a custom tag or layer to the Unity project, and optionally assign the tag to a GameObject. Tags are used with CompareTag() and GameObject.FindWithTag(). Layers are used for physics collision filtering, raycasting, and camera culling. Built-in tags (Untagged, Respawn, Finish, EditorOnly, MainCamera, Player, GameController) and layers (Default, TransparentFX, Ignore Raycast, Water, UI) already exist and do not need to be added. This tool modifies the project's TagManager settings.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "tag": {
+        "type": "string",
+        "description": "The name of the tag to add, e.g. 'Enemy', 'Collectible', 'Projectile'. If this tag already exists it will be skipped."
+      },
+      "layer": {
+        "type": "string",
+        "description": "The name of the layer to add, e.g. 'Enemies', 'Ground', 'Interactable'. Will be placed in the first available user layer slot (6-31)."
+      },
+      "game_object": {
+        "type": "string",
+        "description": "Optional. The name of a GameObject to assign the tag to after adding it. Only used when 'tag' is provided."
+      }
+    },
+    "required": []
+  }
+}

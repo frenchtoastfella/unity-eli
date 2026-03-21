@@ -1,0 +1,34 @@
+{
+  "name": "manage_prefab",
+  "description": "Performs prefab operations: instantiate a prefab into the scene (with prefab link), open a prefab asset in Prefab Mode for isolation editing, exit Prefab Mode, apply scene instance overrides back to the prefab asset, or revert a scene instance to match the prefab.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["instantiate", "open_edit_mode", "close_edit_mode", "apply_overrides", "revert_overrides"],
+        "description": "instantiate: place a prefab in the scene. open_edit_mode: open prefab for isolation editing. close_edit_mode: return to the scene. apply_overrides: push scene instance changes back to the prefab asset. revert_overrides: reset a scene instance to match the prefab."
+      },
+      "prefab_path": {
+        "type": "string",
+        "description": "Asset path to the prefab file (e.g. 'Assets/Prefabs/Enemy.prefab'). Required for instantiate and open_edit_mode."
+      },
+      "game_object": {
+        "type": "string",
+        "description": "Name of the scene prefab instance. Required for apply_overrides and revert_overrides."
+      },
+      "name": {
+        "type": "string",
+        "description": "Optional name override for the instantiated GameObject (instantiate only). Defaults to the prefab name."
+      },
+      "parent": {
+        "type": "string",
+        "description": "Optional name of a scene GameObject to use as parent when instantiating."
+      },
+      "position_x": { "type": "number", "description": "World X position for instantiate. Default 0." },
+      "position_y": { "type": "number", "description": "World Y position for instantiate. Default 0." },
+      "position_z": { "type": "number", "description": "World Z position for instantiate. Default 0." }
+    },
+    "required": ["action"]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "create_animator_controller",
+  "description": "Creates a new AnimatorController asset (.controller) at the given path, with optional initial states and parameters.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Asset path for the new controller, e.g. 'Assets/Animations/Player.controller'."
+      },
+      "parameters": {
+        "type": "string",
+        "description": "Optional JSON array of parameters to add: [{\"name\":\"Speed\",\"type\":\"Float\"},{\"name\":\"IsGrounded\",\"type\":\"Bool\"},{\"name\":\"Jump\",\"type\":\"Trigger\"},{\"name\":\"Health\",\"type\":\"Int\"}]. Types: Float, Int, Bool, Trigger."
+      },
+      "states": {
+        "type": "string",
+        "description": "Optional JSON array of states to add to the base layer: [{\"name\":\"Idle\"},{\"name\":\"Run\"},{\"name\":\"Jump\"}]."
+      }
+    },
+    "required": ["path"]
+  }
+}

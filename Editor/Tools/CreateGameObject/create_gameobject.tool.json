@@ -1,0 +1,29 @@
+{
+  "name": "create_gameobject",
+  "description": "Create a new GameObject in the current scene. Optionally create it from a primitive type (Cube, Sphere, Capsule, Cylinder, Plane, Quad). You can set its position, rotation (euler angles), scale, and an optional parent.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The name of the GameObject."
+      },
+      "primitive_type": {
+        "type": "string",
+        "enum": ["None", "Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad"],
+        "description": "Optional primitive type. Use 'None' or omit for an empty GameObject."
+      },
+      "position_x": { "type": "number", "description": "World X position. Default 0." },
+      "position_y": { "type": "number", "description": "World Y position. Default 0." },
+      "position_z": { "type": "number", "description": "World Z position. Default 0." },
+      "rotation_x": { "type": "number", "description": "Euler rotation X in degrees. Default 0." },
+      "rotation_y": { "type": "number", "description": "Euler rotation Y in degrees. Default 0." },
+      "rotation_z": { "type": "number", "description": "Euler rotation Z in degrees. Default 0." },
+      "scale_x": { "type": "number", "description": "Scale X. Default 1." },
+      "scale_y": { "type": "number", "description": "Scale Y. Default 1." },
+      "scale_z": { "type": "number", "description": "Scale Z. Default 1." },
+      "parent": { "type": "string", "description": "Optional name of an existing GameObject to set as the parent." }
+    },
+    "required": ["name"]
+  }
+}

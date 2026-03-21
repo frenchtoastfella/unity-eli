@@ -1,0 +1,18 @@
+{
+  "name": "remove_component",
+  "description": "Remove a component from an existing GameObject in the current scene. Specify the GameObject name and the component type to remove. Cannot remove Transform components.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object_name": {
+        "type": "string",
+        "description": "The name of the GameObject to remove the component from."
+      },
+      "component_type": {
+        "type": "string",
+        "description": "The type name of the component to remove, e.g. 'Rigidbody', 'BoxCollider', or a custom script class name like 'PlayerController'."
+      }
+    },
+    "required": ["game_object_name", "component_type"]
+  }
+}

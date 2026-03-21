@@ -1,0 +1,18 @@
+{
+  "name": "move_asset",
+  "description": "Moves or renames an asset or folder within the Unity project. To rename, set to_path to the same directory with a new filename. Both paths must start with 'Assets/'.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "from_path": {
+        "type": "string",
+        "description": "Current path of the asset or folder, e.g. 'Assets/Scripts/OldName.cs'."
+      },
+      "to_path": {
+        "type": "string",
+        "description": "Destination path, e.g. 'Assets/Scripts/NewName.cs' or 'Assets/OtherFolder/NewName.cs'."
+      }
+    },
+    "required": ["from_path", "to_path"]
+  }
+}

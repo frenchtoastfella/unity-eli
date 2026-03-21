@@ -1,0 +1,27 @@
+{
+  "name": "manage_build_settings",
+  "description": "Manage build configuration: switch platform, toggle development build, and read current build settings. Actions: 'status' (default) shows active target and options; 'set_target' switches build platform; 'set_option' changes a build option like development mode.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["status", "set_target", "set_option"],
+        "description": "The operation to perform. Default: 'status'."
+      },
+      "target": {
+        "type": "string",
+        "description": "For 'set_target': the build target. Examples: 'StandaloneWindows64', 'WebGL', 'Android', 'iOS', 'StandaloneOSX', 'StandaloneLinux64'."
+      },
+      "option": {
+        "type": "string",
+        "description": "For 'set_option': the option name. Supported: 'development', 'allowDebugging', 'connectProfiler', 'deepProfiling'."
+      },
+      "value": {
+        "type": "string",
+        "description": "For 'set_option': the value to set (e.g. 'true' or 'false')."
+      }
+    },
+    "required": []
+  }
+}

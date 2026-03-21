@@ -1,0 +1,14 @@
+{
+  "name": "set_skybox",
+  "description": "Set the scene's skybox material in the Lighting environment settings. Pass an empty or null material_path to remove the skybox (set to none). Pass a path relative to the Assets folder to set a specific skybox material.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "material_path": {
+        "type": "string",
+        "description": "Path to the skybox material relative to the Assets folder, e.g. 'Materials/MySkybox.mat'. Use an empty string or omit to set the skybox to none."
+      }
+    },
+    "required": []
+  }
+}

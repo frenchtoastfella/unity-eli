@@ -1,0 +1,22 @@
+{
+  "name": "create_scriptable_object",
+  "description": "Create a ScriptableObject asset in the project from a given type. The type must be a class that extends ScriptableObject and must already exist as a compiled script.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": "string",
+        "description": "The ScriptableObject class name, e.g. 'UpgradeData', 'WeaponConfig'."
+      },
+      "path": {
+        "type": "string",
+        "description": "Optional. The folder path where the asset will be created. Defaults to 'Assets/Resources'."
+      },
+      "file_name": {
+        "type": "string",
+        "description": "Optional. The asset file name (without or with .asset extension). Defaults to the type name."
+      }
+    },
+    "required": ["type"]
+  }
+}

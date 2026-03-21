@@ -1,0 +1,23 @@
+{
+  "name": "reorder_component",
+  "description": "Moves a component up or down in the Inspector component stack on a GameObject.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "game_object": {
+        "type": "string",
+        "description": "Name of the GameObject."
+      },
+      "component_type": {
+        "type": "string",
+        "description": "Type name of the component to reorder (e.g. 'Rigidbody', 'BoxCollider')."
+      },
+      "direction": {
+        "type": "string",
+        "enum": ["up", "down"],
+        "description": "'up' moves the component earlier in the list, 'down' moves it later."
+      }
+    },
+    "required": ["game_object", "component_type", "direction"]
+  }
+}

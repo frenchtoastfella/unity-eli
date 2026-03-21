@@ -1,0 +1,18 @@
+{
+  "name": "create_script",
+  "description": "Create a new C# script file in the Unity project. The script will be placed under Assets/Scripts/ by default unless a different path is specified. After creation, Unity will automatically compile the script.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "file_path": {
+        "type": "string",
+        "description": "The file path relative to the Assets folder, e.g. 'Scripts/PlayerController.cs'. Must end with '.cs'."
+      },
+      "content": {
+        "type": "string",
+        "description": "The full C# source code content of the script."
+      }
+    },
+    "required": ["file_path", "content"]
+  }
+}

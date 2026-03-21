@@ -1,0 +1,19 @@
+{
+  "name": "set_time_settings",
+  "description": "Sets Unity's time manager properties (Project Settings > Time). Useful for adjusting simulation speed, physics update rate, and particle timing.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "property": {
+        "type": "string",
+        "enum": ["fixed_timestep", "max_timestep", "time_scale", "maximum_particle_timestep"],
+        "description": "fixed_timestep: physics update interval (e.g. 0.02 = 50 Hz). max_timestep: max frame time. time_scale: simulation speed (1=normal, 0.5=half speed). maximum_particle_timestep: max particle system step."
+      },
+      "value": {
+        "type": "string",
+        "description": "Numeric value as a string (e.g. '0.02', '1.0', '0.5')."
+      }
+    },
+    "required": ["property", "value"]
+  }
+}

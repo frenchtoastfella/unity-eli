@@ -1,0 +1,18 @@
+{
+  "name": "edit_script",
+  "description": "Edit or overwrite an existing C# script file in the Unity project. Provide the full new content of the file. The path is relative to the Assets folder.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "file_path": {
+        "type": "string",
+        "description": "The file path relative to the Assets folder, e.g. 'Scripts/PlayerController.cs'."
+      },
+      "content": {
+        "type": "string",
+        "description": "The full new C# source code content to write to the file."
+      }
+    },
+    "required": ["file_path", "content"]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "refresh_assets",
+  "description": "Triggers AssetDatabase.Refresh() to reimport changed assets and compile new or modified scripts. Call this after creating or editing scripts before trying to add them as components. Optionally waits for script compilation to complete before returning.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "wait_for_compilation": {
+        "type": "boolean",
+        "description": "If true, waits for any triggered script compilation to complete before returning (up to 30 second timeout). Default: false."
+      }
+    },
+    "required": []
+  }
+}
