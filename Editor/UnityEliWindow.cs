@@ -1087,8 +1087,9 @@ namespace UnityEli.Editor
 
         private void LoadIcons()
         {
-            _sendIcon = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/UnityEli/Editor/T_Send.png");
-            _copyIcon = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/UnityEli/Editor/T_Copy.png");
+            var packagePath = "Packages/com.frenchtoastfella.unityeli/Editor";
+            _sendIcon = AssetDatabase.LoadAssetAtPath<Texture2D>($"{packagePath}/T_Send.png");
+            _copyIcon = AssetDatabase.LoadAssetAtPath<Texture2D>($"{packagePath}/T_Copy.png");
         }
 
         // ── Markdown renderer ─────────────────────────────────────────────────

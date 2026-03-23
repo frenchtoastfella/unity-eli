@@ -14,7 +14,7 @@ Install with Unity Package Manager from your Git URL:
 
 1. In Unity, open **Window > Package Manager**
 2. Click **+** and choose **Add package from git URL...**
-3. Enter your repository URL (for example: `https://github.com/frenchtoastfella/unity-eli`)
+3. Enter repository URL (`https://github.com/frenchtoastfella/unity-eli.git`)
 4. Open **Window > Unity Eli**
 5. Unity Eli will auto-initialize — if there's no `README.md` in your Assets folder it will ask you a few questions to create one
 

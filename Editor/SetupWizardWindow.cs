@@ -478,6 +478,9 @@ namespace UnityEli.Editor
 
             try
             {
+                var dir = Path.GetDirectoryName(absolutePath);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
                 File.WriteAllText(absolutePath, _instructionsText, new UTF8Encoding(false));
             }
             catch (Exception e)
