@@ -34,7 +34,8 @@ namespace UnityEli.Editor.Tools
             if (componentType == typeof(Transform) || componentType == typeof(RectTransform))
                 return ToolResult.Error(
                     $"Transform properties cannot be set with this tool. " +
-                    $"Use the 'set_transform' tool instead (supports position, rotation, scale, and RectTransform properties).");
+                    $"Use the 'set_transform' tool instead. It supports channels: position, rotation, scale, " +
+                    $"anchors (x,y=anchorMin, z,w=anchorMax), pivot (x,y), anchored_position (x,y), and size_delta (x,y).");
 
             var component = go.GetComponent(componentType);
             if (component == null)

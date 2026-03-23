@@ -17,7 +17,7 @@ namespace UnityEli.Editor.Tools
             if (string.IsNullOrWhiteSpace(input.game_objects))
                 return ToolResult.Error("game_objects is required (single name or comma-separated list).");
             if (string.IsNullOrWhiteSpace(input.channels))
-                return ToolResult.Error("channels is required: position, rotation, scale, position_rotation, or all.");
+                return ToolResult.Error("channels is required: position, rotation, scale, position_rotation, all, anchors, pivot, anchored_position, size_delta.");
 
             var names = input.game_objects.Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToArray();
             if (names.Length == 0)
@@ -31,9 +31,15 @@ namespace UnityEli.Editor.Tools
             bool applyPos = channels == "position" || channels == "position_rotation" || channels == "all";
             bool applyRot = channels == "rotation" || channels == "position_rotation" || channels == "all";
             bool applyScale = channels == "scale" || channels == "all";
+            bool applyAnchors = channels == "anchors";
+            bool applyPivot = channels == "pivot";
+            bool applyAnchoredPos = channels == "anchored_position";
+            bool applySizeDelta = channels == "size_delta";
 
-            if (!applyPos && !applyRot && !applyScale)
-                return ToolResult.Error($"Unknown channels '{input.channels}'. Use: position, rotation, scale, position_rotation, all.");
+            if (!applyPos && !applyRot && !applyScale && !applyAnchors && !applyPivot && !applyAnchoredPos && !applySizeDelta)
+                return ToolResult.Error($"Unknown channels '{input.channels}'. Use: position, rotation, scale, position_rotation, all, anchors, pivot, anchored_position, size_delta.");
+
+            bool isRectChannel = applyAnchors || applyPivot || applyAnchoredPos || applySizeDelta;
 
             var results = new System.Collections.Generic.List<string>();
             var errors = new System.Collections.Generic.List<string>();
@@ -47,44 +53,102 @@ namespace UnityEli.Editor.Tools
                     continue;
                 }
 
-                Undo.RecordObject(go.transform, "Unity Eli: Set Transform");
-
-                if (applyPos)
+                if (isRectChannel)
                 {
-                    if (mode == "absolute")
-                        go.transform.position = new Vector3(input.x, input.y, input.z);
-                    else
-                        go.transform.position += new Vector3(input.x, input.y, input.z);
+                    var rect = go.GetComponent<RectTransform>();
+                    if (rect == null)
+                    {
+                        errors.Add($"'{name}' has no RectTransform");
+                        continue;
+                    }
+
+                    Undo.RecordObject(rect, "Unity Eli: Set RectTransform");
+
+                    if (applyAnchors)
+                    {
+                        // x,y = anchorMin; z,w = anchorMax (w parsed from inputJson)
+                        var w = JsonHelper.ExtractFloat(inputJson, "w", rect.anchorMax.y);
+                        if (mode == "absolute")
+                        {
+                            rect.anchorMin = new Vector2(input.x, input.y);
+                            rect.anchorMax = new Vector2(input.z, w);
+                        }
+                        else
+                        {
+                            rect.anchorMin += new Vector2(input.x, input.y);
+                            rect.anchorMax += new Vector2(input.z, w);
+                        }
+                    }
+
+                    if (applyPivot)
+                    {
+                        if (mode == "absolute")
+                            rect.pivot = new Vector2(input.x, input.y);
+                        else
+                            rect.pivot += new Vector2(input.x, input.y);
+                    }
+
+                    if (applyAnchoredPos)
+                    {
+                        if (mode == "absolute")
+                            rect.anchoredPosition = new Vector2(input.x, input.y);
+                        else
+                            rect.anchoredPosition += new Vector2(input.x, input.y);
+                    }
+
+                    if (applySizeDelta)
+                    {
+                        if (mode == "absolute")
+                            rect.sizeDelta = new Vector2(input.x, input.y);
+                        else
+                            rect.sizeDelta += new Vector2(input.x, input.y);
+                    }
                 }
-
-                if (applyRot)
+                else
                 {
-                    if (mode == "absolute")
-                        go.transform.eulerAngles = new Vector3(input.x, input.y, input.z);
-                    else
-                        go.transform.Rotate(input.x, input.y, input.z, Space.Self);
-                }
+                    Undo.RecordObject(go.transform, "Unity Eli: Set Transform");
 
-                if (applyScale)
-                {
-                    // Scale is always local-space
-                    if (mode == "absolute")
-                        go.transform.localScale = new Vector3(
-                            input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.x,
-                            input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.y,
-                            input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.z);
-                    else
-                        go.transform.localScale += new Vector3(input.x, input.y, input.z);
+                    if (applyPos)
+                    {
+                        if (mode == "absolute")
+                            go.transform.position = new Vector3(input.x, input.y, input.z);
+                        else
+                            go.transform.position += new Vector3(input.x, input.y, input.z);
+                    }
+
+                    if (applyRot)
+                    {
+                        if (mode == "absolute")
+                            go.transform.eulerAngles = new Vector3(input.x, input.y, input.z);
+                        else
+                            go.transform.Rotate(input.x, input.y, input.z, Space.Self);
+                    }
+
+                    if (applyScale)
+                    {
+                        // Scale is always local-space
+                        if (mode == "absolute")
+                            go.transform.localScale = new Vector3(
+                                input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.x,
+                                input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.y,
+                                input.x == 0f && input.y == 0f && input.z == 0f ? 1f : input.z);
+                        else
+                            go.transform.localScale += new Vector3(input.x, input.y, input.z);
+                    }
                 }
 
                 results.Add(name);
             }
 
             if (errors.Count > 0)
-                return ToolResult.Error($"Not found: {string.Join(", ", errors)}.");
+                return ToolResult.Error($"Errors: {string.Join(", ", errors)}.");
+
+            var valueDesc = isRectChannel && channels == "anchors"
+                ? $"min({input.x},{input.y}) max({input.z},{JsonHelper.ExtractFloat(inputJson, "w", 0f)})"
+                : $"[{input.x}, {input.y}, {input.z}]";
 
             return ToolResult.Success(
-                $"Applied {channels} ({mode}) [{input.x}, {input.y}, {input.z}] to: {string.Join(", ", results)}.");
+                $"Applied {channels} ({mode}) {valueDesc} to: {string.Join(", ", results)}.");
         }
 
         [Serializable]

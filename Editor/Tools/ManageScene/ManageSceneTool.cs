@@ -113,7 +113,23 @@ namespace UnityEli.Editor.Tools
                     $"Set save_current=true to save before switching, or save manually first.");
             }
 
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            var setup = NewSceneSetup.DefaultGameObjects;
+            if (!string.IsNullOrWhiteSpace(input.setup))
+            {
+                switch (input.setup.ToLowerInvariant())
+                {
+                    case "empty":
+                        setup = NewSceneSetup.EmptyScene;
+                        break;
+                    case "default":
+                        setup = NewSceneSetup.DefaultGameObjects;
+                        break;
+                    default:
+                        return ToolResult.Error($"Invalid setup '{input.setup}'. Valid values: 'empty', 'default'.");
+                }
+            }
+
+            var scene = EditorSceneManager.NewScene(setup, NewSceneMode.Single);
 
             // Ensure the directory exists
             var dir = Path.GetDirectoryName(input.path);
@@ -198,6 +214,7 @@ namespace UnityEli.Editor.Tools
         {
             public string action;
             public string path;
+            public string setup;
             public bool save_current = true;
         }
     }

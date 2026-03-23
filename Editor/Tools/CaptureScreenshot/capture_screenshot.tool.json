@@ -1,13 +1,13 @@
 {
   "name": "capture_screenshot",
-  "description": "Capture a screenshot of the current scene from the Scene View camera or a game camera. Returns the file path of the saved PNG image — use your Read tool on that path to view it. The scene view captures what is visible in the Scene tab. The game camera captures what the main camera sees (excluding Screen Space - Overlay UI). Useful for verifying layout, lighting, and object placement.",
+  "description": "Capture a screenshot of the current scene or game view. Returns the file path of the saved PNG image — use your Read tool on that path to view it. Use 'scene' for 3D world layout (Scene View camera). Use 'game' for what the player sees through the main camera — preferred for UI work. Note: Screen Space - Overlay UI canvases are only fully visible when using 'game' source with the game in play mode.",
   "input_schema": {
     "type": "object",
     "properties": {
       "source": {
         "type": "string",
         "enum": ["scene", "game"],
-        "description": "Which camera to capture from. 'scene' = Scene View camera (default, always works). 'game' = the main game camera (Camera.main). Note: Screen Space - Overlay UI is only visible in the game source."
+        "description": "Which camera to capture from. 'scene' = Scene View camera (default). 'game' = the main game camera (Camera.main) — use this for UI work."
       },
       "width": {
         "type": "integer",

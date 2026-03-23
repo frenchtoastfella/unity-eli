@@ -1,6 +1,6 @@
 {
   "name": "set_transform",
-  "description": "Sets the position, rotation (euler angles), or scale of one or more GameObjects. Supports absolute (set to exact value) and relative (add to current value) modes. For multiple objects, separate names with commas.",
+  "description": "Sets the position, rotation (euler angles), scale, or RectTransform properties (anchors, pivot, anchored_position, size_delta) of one or more GameObjects. Supports absolute (set to exact value) and relative (add to current value) modes. For multiple objects, separate names with commas. For RectTransform channels: 'anchors' uses x,y as anchorMin and z,w as anchorMax; 'pivot' uses x,y; 'anchored_position' uses x,y in pixels; 'size_delta' uses x,y as width,height in pixels.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -10,12 +10,13 @@
       },
       "channels": {
         "type": "string",
-        "enum": ["position", "rotation", "scale", "position_rotation", "all"],
-        "description": "Which transform channels to apply. 'position_rotation' sets both position and rotation with the same x/y/z values. 'all' sets position, rotation, and scale."
+        "enum": ["position", "rotation", "scale", "position_rotation", "all", "anchors", "pivot", "anchored_position", "size_delta"],
+        "description": "Which transform channels to apply. 'position_rotation' sets both position and rotation with the same x/y/z values. 'all' sets position, rotation, and scale. RectTransform channels: 'anchors' (x,y=anchorMin, z,w=anchorMax), 'pivot' (x,y), 'anchored_position' (x,y pixels), 'size_delta' (x=width, y=height pixels)."
       },
       "x": { "type": "number", "description": "X value for the selected channel(s)." },
       "y": { "type": "number", "description": "Y value for the selected channel(s)." },
-      "z": { "type": "number", "description": "Z value for the selected channel(s)." },
+      "z": { "type": "number", "description": "Z value for the selected channel(s). Used as anchorMax.x for 'anchors' channel." },
+      "w": { "type": "number", "description": "W value. Only used for 'anchors' channel as anchorMax.y." },
       "mode": {
         "type": "string",
         "enum": ["absolute", "relative"],

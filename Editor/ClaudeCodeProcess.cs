@@ -165,7 +165,7 @@ namespace UnityEli.Editor
             Debug.Log($"[Unity Eli] Registering MCP server on port {port}...");
 
             // Remove any existing entry (may fail if none exists — that's fine)
-            RunClaudeSync("mcp remove unity");
+            RunClaudeSync("mcp remove --scope local unity");
 
             // Add with the current port
             var success = RunClaudeSync(
@@ -178,8 +178,10 @@ namespace UnityEli.Editor
             }
             else
             {
-                Debug.LogWarning("[Unity Eli] Failed to register MCP server with 'claude mcp add'. " +
-                                 "MCP tools may not be available.");
+                // "already exists" is fine — the server is registered, just possibly at the old port.
+                // The .mcp.json file (written separately) always has the current port as backup.
+                SessionState.SetInt(McpRegisteredPortKey, port);
+                Debug.Log("[Unity Eli] MCP server already registered (using .mcp.json for current port).");
             }
         }
 
@@ -191,7 +193,7 @@ namespace UnityEli.Editor
                 var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "claude",
+                    FileName = ResolveClaudePath(),
                     Arguments = args,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -242,13 +244,15 @@ namespace UnityEli.Editor
 
 #if UNITY_EDITOR_WIN
             scriptPath += ".bat";
-            var script = $"@echo off\r\ntype \"{promptPath}\" | claude {cliArgs} > \"{stdoutPath}\" 2> \"{stderrPath}\"\r\n";
+            var claudePath = ResolveClaudePath();
+            var script = $"@echo off\r\ntype \"{promptPath}\" | \"{claudePath}\" {cliArgs} > \"{stdoutPath}\" 2> \"{stderrPath}\"\r\n";
             File.WriteAllText(scriptPath, script, Utf8NoBom);
             psi.FileName = "cmd.exe";
             psi.Arguments = $"/c \"{scriptPath}\"";
 #else
             scriptPath += ".sh";
-            var script = $"#!/bin/sh\ncat \"{promptPath}\" | claude {cliArgs} > \"{stdoutPath}\" 2> \"{stderrPath}\"\n";
+            var claudePath = ResolveClaudePath();
+            var script = $"#!/bin/sh\ncat \"{promptPath}\" | \"{claudePath}\" {cliArgs} > \"{stdoutPath}\" 2> \"{stderrPath}\"\n";
             File.WriteAllText(scriptPath, script, Utf8NoBom);
             // Make executable
             try { Process.Start("chmod", $"+x \"{scriptPath}\"")?.WaitForExit(2000); } catch { }
@@ -708,6 +712,125 @@ namespace UnityEli.Editor
         {
             return "{\"mcpServers\":{\"unity\":{\"type\":\"http\",\"url\":\"http://localhost:" +
                    port + "/mcp/\"}}}";
+        }
+
+        // ── Claude CLI path resolution ───────────────────────────────────────
+
+        private static string _cachedClaudePath;
+
+        /// <summary>
+        /// Resolves the full path to the 'claude' CLI executable.
+        /// Unity often doesn't inherit the full user PATH (especially npm global bin),
+        /// so we probe common install locations before falling back to 'where'/'which'.
+        /// </summary>
+        private static string ResolveClaudePath()
+        {
+            if (_cachedClaudePath != null) return _cachedClaudePath;
+
+#if UNITY_EDITOR_WIN
+            // Common Windows locations for npm global installs
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var candidates = new[]
+            {
+                Path.Combine(appData, "npm", "claude.cmd"),
+                Path.Combine(appData, "npm", "claude"),
+            };
+            foreach (var c in candidates)
+            {
+                if (File.Exists(c))
+                {
+                    _cachedClaudePath = c;
+                    Debug.Log($"[Unity Eli] Resolved claude CLI at: {c}");
+                    return c;
+                }
+            }
+
+            // Fallback: ask the system via 'where'
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "where",
+                    Arguments = "claude",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                };
+                using (var proc = Process.Start(psi))
+                {
+                    var output = proc.StandardOutput.ReadToEnd().Trim();
+                    proc.WaitForExit(5000);
+                    if (proc.ExitCode == 0 && !string.IsNullOrEmpty(output))
+                    {
+                        // 'where' may return multiple lines; take the first .cmd match or first result
+                        foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (line.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase))
+                            {
+                                _cachedClaudePath = line;
+                                Debug.Log($"[Unity Eli] Resolved claude CLI via 'where': {line}");
+                                return line;
+                            }
+                        }
+                        var first = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                        _cachedClaudePath = first;
+                        Debug.Log($"[Unity Eli] Resolved claude CLI via 'where': {first}");
+                        return first;
+                    }
+                }
+            }
+            catch { }
+#else
+            // macOS / Linux: check common locations
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var candidates = new[]
+            {
+                "/usr/local/bin/claude",
+                "/opt/homebrew/bin/claude",
+                Path.Combine(home, ".npm-global", "bin", "claude"),
+                Path.Combine(home, ".nvm", "versions"),  // handled below
+            };
+            foreach (var c in candidates)
+            {
+                if (c.Contains(".nvm")) continue; // skip placeholder
+                if (File.Exists(c))
+                {
+                    _cachedClaudePath = c;
+                    Debug.Log($"[Unity Eli] Resolved claude CLI at: {c}");
+                    return c;
+                }
+            }
+
+            // Fallback: ask the system via 'which'
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "/bin/sh",
+                    Arguments = "-c \"which claude\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                };
+                using (var proc = Process.Start(psi))
+                {
+                    var output = proc.StandardOutput.ReadToEnd().Trim();
+                    proc.WaitForExit(5000);
+                    if (proc.ExitCode == 0 && !string.IsNullOrEmpty(output))
+                    {
+                        _cachedClaudePath = output;
+                        Debug.Log($"[Unity Eli] Resolved claude CLI via 'which': {output}");
+                        return output;
+                    }
+                }
+            }
+            catch { }
+#endif
+
+            // Last resort: bare name, hope PATH works
+            Debug.LogWarning("[Unity Eli] Could not resolve full path to 'claude' CLI. Falling back to bare name.");
+            _cachedClaudePath = "claude";
+            return "claude";
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────

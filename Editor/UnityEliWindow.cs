@@ -329,32 +329,17 @@ namespace UnityEli.Editor
             GUI.enabled = !_isProcessing;
             var e = Event.current;
 
-            // Enter = submit, Shift+Enter = newline
+            // Ctrl+Enter = submit, plain Enter = new line (handled by TextArea naturally).
             bool enterPressed = false;
-            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Return &&
-                GUI.GetNameOfFocusedControl() == "ChatInput")
+            var isChatInputFocused = GUI.GetNameOfFocusedControl() == "ChatInput";
+            if (e.type == EventType.KeyDown && isChatInputFocused && IsEnterKey(e))
             {
-                if (e.shift)
-                {
-                    // Insert newline at cursor — IMGUI TextArea may lose focus on Shift+Return
-                    var te = GUIUtility.GetStateObject(typeof(TextEditor),
-                        GUIUtility.keyboardControl) as TextEditor;
-                    if (te != null)
-                    {
-                        te.ReplaceSelection("\n");
-                        _inputText = te.text;
-                    }
-                    else
-                    {
-                        _inputText += "\n";
-                    }
-                    e.Use();
-                }
-                else
+                if (e.control || e.command)
                 {
                     enterPressed = true;
                     e.Use();
                 }
+                // Plain Enter / Shift+Enter: let TextArea handle it (inserts newline).
             }
 
             var lineHeight = _inputTextAreaStyle.lineHeight > 0 ? _inputTextAreaStyle.lineHeight : 16f;
@@ -374,7 +359,7 @@ namespace UnityEli.Editor
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField("Shift+Enter for new line", EditorStyles.miniLabel, GUILayout.Width(140));
+            EditorGUILayout.LabelField("Ctrl+Enter to send", EditorStyles.miniLabel, GUILayout.Width(140));
             EditorGUILayout.EndHorizontal();
         }
 
@@ -808,6 +793,11 @@ namespace UnityEli.Editor
                 ClaudeCodeProcess.SendMessage(userText, _sessionId, McpServer.Port);
                 Repaint(); return;
             }
+        }
+
+        private static bool IsEnterKey(Event e)
+        {
+            return e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter;
         }
 
         // ── Event handlers ────────────────────────────────────────────────────

@@ -118,6 +118,33 @@ namespace UnityEli.Editor
         }
 
         /// <summary>
+        /// Extracts a float field. Returns defaultValue if the key is not found.
+        /// </summary>
+        public static float ExtractFloat(string json, string key, float defaultValue)
+        {
+            if (string.IsNullOrEmpty(json)) return defaultValue;
+
+            var searchKey = $"\"{key}\"";
+            var keyIndex = json.IndexOf(searchKey, System.StringComparison.Ordinal);
+            if (keyIndex < 0) return defaultValue;
+
+            var colonIndex = json.IndexOf(':', keyIndex + searchKey.Length);
+            if (colonIndex < 0) return defaultValue;
+
+            var valueStart = colonIndex + 1;
+            while (valueStart < json.Length && char.IsWhiteSpace(json[valueStart])) valueStart++;
+
+            var valueEnd = valueStart;
+            while (valueEnd < json.Length && (char.IsDigit(json[valueEnd]) || json[valueEnd] == '-' || json[valueEnd] == '.' || json[valueEnd] == 'e' || json[valueEnd] == 'E' || json[valueEnd] == '+')) valueEnd++;
+
+            if (valueEnd == valueStart) return defaultValue;
+            if (float.TryParse(json.Substring(valueStart, valueEnd - valueStart),
+                System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float result))
+                return result;
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Extracts the raw JSON for an object-valued field.
         /// Returns "{}" if not found.
         /// </summary>

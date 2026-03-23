@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityEli.Editor.Tools
@@ -45,9 +46,11 @@ namespace UnityEli.Editor.Tools
                 }
             }
 
-            // Load JSON definitions from .tool.json files
-            var toolsRoot = "Assets/UnityEli/Editor/Tools";
-            if (Directory.Exists(toolsRoot))
+            // Load JSON definitions from .tool.json files.
+            // Resolve the Tools directory from the package location (works whether installed
+            // as a package in Library/PackageCache or embedded in Assets/).
+            var toolsRoot = ResolveToolsRoot();
+            if (toolsRoot != null && Directory.Exists(toolsRoot))
             {
                 var jsonFiles = Directory.GetFiles(toolsRoot, "*.tool.json", SearchOption.AllDirectories);
                 foreach (var jsonFile in jsonFiles)
@@ -127,6 +130,30 @@ namespace UnityEli.Editor.Tools
             _isInitialized = false;
             _tools = null;
             _toolDefinitions = null;
+        }
+
+        /// <summary>
+        /// Resolves the filesystem path to the Editor/Tools directory,
+        /// whether the package lives in Library/PackageCache or Assets/.
+        /// </summary>
+        private static string ResolveToolsRoot()
+        {
+            // Use Unity's PackageManager API to find our package's resolved path on disk.
+            var pkgInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(ToolRegistry).Assembly);
+            if (pkgInfo != null)
+            {
+                var toolsDir = Path.Combine(pkgInfo.resolvedPath, "Editor", "Tools");
+                if (Directory.Exists(toolsDir))
+                    return toolsDir;
+            }
+
+            // Fallback: check the Assets path (for non-package installs)
+            const string assetsPath = "Assets/UnityEli/Editor/Tools";
+            if (Directory.Exists(assetsPath))
+                return assetsPath;
+
+            Debug.LogWarning("[Unity Eli] Could not locate Editor/Tools directory for tool definitions.");
+            return null;
         }
     }
 

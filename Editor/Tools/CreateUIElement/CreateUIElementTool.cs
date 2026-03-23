@@ -47,7 +47,7 @@ namespace UnityEli.Editor.Tools
 
             // Set up RectTransform
             var rect = go.AddComponent<RectTransform>();
-            SetupRectTransform(rect, input);
+            SetupRectTransform(rect, inputJson);
 
             // Add the appropriate component based on element_type
             switch (input.element_type)
@@ -61,53 +61,55 @@ namespace UnityEli.Editor.Tools
                 case "Panel":
                     SetupImage(go, input, true);
                     break;
+                case "Button":
+                    SetupButton(go, rect, input, inputJson);
+                    break;
                 case "Empty":
                     // Just the RectTransform, no visual component
                     break;
                 default:
-                    return ToolResult.Error($"Invalid element_type: '{input.element_type}'. Valid values: Text, Image, Panel, Empty.");
+                    return ToolResult.Error($"Invalid element_type: '{input.element_type}'. Valid values: Text, Image, Panel, Button, Empty.");
             }
 
             Undo.RegisterCreatedObjectUndo(go, $"Unity Eli: Create UI {input.element_type} '{input.name}'");
             Selection.activeGameObject = go;
 
+            var anchorMinX = JsonHelper.ExtractFloat(inputJson, "anchor_min_x", 0.5f);
+            var anchorMinY = JsonHelper.ExtractFloat(inputJson, "anchor_min_y", 0.5f);
+            var anchorMaxX = JsonHelper.ExtractFloat(inputJson, "anchor_max_x", 0.5f);
+            var anchorMaxY = JsonHelper.ExtractFloat(inputJson, "anchor_max_y", 0.5f);
+
             return ToolResult.Success(
                 $"UI {input.element_type} '{input.name}' created under '{input.parent_name}' " +
-                $"with anchors ({input.anchor_min_x},{input.anchor_min_y})-({input.anchor_max_x},{input.anchor_max_y}).");
+                $"with anchors ({anchorMinX},{anchorMinY})-({anchorMaxX},{anchorMaxY}).");
         }
 
-        private void SetupRectTransform(RectTransform rect, Input input)
+        private void SetupRectTransform(RectTransform rect, string inputJson)
         {
-            // Anchors � default to center (0.5, 0.5) if not specified
-            // Since JsonUtility defaults floats to 0, we use a helper to detect "not set"
-            var anchorMinX = HasAnchorValue(input.anchor_min_x, input.anchor_max_x) ? input.anchor_min_x : 0.5f;
-            var anchorMinY = HasAnchorValue(input.anchor_min_y, input.anchor_max_y) ? input.anchor_min_y : 0.5f;
-            var anchorMaxX = HasAnchorValue(input.anchor_max_x, input.anchor_min_x) ? input.anchor_max_x : 0.5f;
-            var anchorMaxY = HasAnchorValue(input.anchor_max_y, input.anchor_min_y) ? input.anchor_max_y : 0.5f;
+            // Use JsonHelper.ExtractFloat to correctly default to 0.5 when fields are not specified.
+            // JsonUtility defaults floats to 0, which is a valid anchor value, so we can't use it
+            // to detect "not set".
+            var anchorMinX = JsonHelper.ExtractFloat(inputJson, "anchor_min_x", 0.5f);
+            var anchorMinY = JsonHelper.ExtractFloat(inputJson, "anchor_min_y", 0.5f);
+            var anchorMaxX = JsonHelper.ExtractFloat(inputJson, "anchor_max_x", 0.5f);
+            var anchorMaxY = JsonHelper.ExtractFloat(inputJson, "anchor_max_y", 0.5f);
 
             rect.anchorMin = new Vector2(anchorMinX, anchorMinY);
             rect.anchorMax = new Vector2(anchorMaxX, anchorMaxY);
 
-            // Pivot � default to 0.5, 0.5
-            var pivotX = input.pivot_x != 0f ? input.pivot_x : 0.5f;
-            var pivotY = input.pivot_y != 0f ? input.pivot_y : 0.5f;
+            var pivotX = JsonHelper.ExtractFloat(inputJson, "pivot_x", 0.5f);
+            var pivotY = JsonHelper.ExtractFloat(inputJson, "pivot_y", 0.5f);
             rect.pivot = new Vector2(pivotX, pivotY);
 
             // Position
-            rect.anchoredPosition = new Vector2(input.anchored_position_x, input.anchored_position_y);
+            var posX = JsonHelper.ExtractFloat(inputJson, "anchored_position_x", 0f);
+            var posY = JsonHelper.ExtractFloat(inputJson, "anchored_position_y", 0f);
+            rect.anchoredPosition = new Vector2(posX, posY);
 
-            // Size � default to 200x50
-            var sizeX = input.size_x != 0f ? input.size_x : 200f;
-            var sizeY = input.size_y != 0f ? input.size_y : 50f;
+            // Size — default to 200x50
+            var sizeX = JsonHelper.ExtractFloat(inputJson, "size_x", 200f);
+            var sizeY = JsonHelper.ExtractFloat(inputJson, "size_y", 50f);
             rect.sizeDelta = new Vector2(sizeX, sizeY);
-        }
-
-        private bool HasAnchorValue(float value, float counterpart)
-        {
-            // If both are 0, it's likely intentional (bottom-left anchor)
-            // If only one is 0, it could be default � but we can't tell
-            // So we always respect the value as-is for anchors
-            return true;
         }
 
         private void SetupText(GameObject go, Input input)
@@ -117,7 +119,7 @@ namespace UnityEli.Editor.Tools
             tmp.text = !string.IsNullOrEmpty(input.text) ? input.text : "Text";
             tmp.fontSize = input.font_size > 0f ? input.font_size : 36f;
 
-            // Text color � default to white
+            // Text color — default to white
             var r = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 1f : input.text_color_r;
             var g = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 1f : input.text_color_g;
             var b = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 1f : input.text_color_b;
@@ -152,6 +154,41 @@ namespace UnityEli.Editor.Tools
                 var a = input.image_color_a != 0f ? input.image_color_a : 1f;
                 image.color = new Color(r, g, b, a);
             }
+        }
+
+        private void SetupButton(GameObject go, RectTransform rect, Input input, string inputJson)
+        {
+            // Button = Image + Button component + child Text
+            var image = go.AddComponent<Image>();
+            var r = input.image_color_r != 0f ? input.image_color_r : 1f;
+            var g = input.image_color_g != 0f ? input.image_color_g : 1f;
+            var b = input.image_color_b != 0f ? input.image_color_b : 1f;
+            var a = input.image_color_a != 0f ? input.image_color_a : 1f;
+            image.color = new Color(r, g, b, a);
+
+            go.AddComponent<Button>();
+
+            // Create child Text
+            var textGo = new GameObject("Text");
+            textGo.transform.SetParent(rect, false);
+            var textRect = textGo.AddComponent<RectTransform>();
+            // Stretch text to fill button
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.sizeDelta = Vector2.zero;
+            textRect.anchoredPosition = Vector2.zero;
+
+            var tmp = textGo.AddComponent<TextMeshProUGUI>();
+            tmp.text = !string.IsNullOrEmpty(input.text) ? input.text : "Button";
+            tmp.fontSize = input.font_size > 0f ? input.font_size : 24f;
+            tmp.alignment = ResolveAlignment(input.text_alignment);
+
+            // Text color
+            var tr = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 0.2f : input.text_color_r;
+            var tg = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 0.2f : input.text_color_g;
+            var tb = (input.text_color_r == 0f && input.text_color_g == 0f && input.text_color_b == 0f) ? 0.2f : input.text_color_b;
+            var ta = input.text_color_a != 0f ? input.text_color_a : 1f;
+            tmp.color = new Color(tr, tg, tb, ta);
         }
 
         private static TextAlignmentOptions ResolveAlignment(string alignment)
@@ -190,6 +227,8 @@ namespace UnityEli.Editor.Tools
             public float image_color_g;
             public float image_color_b;
             public float image_color_a;
+            // Anchor/pivot/size fields kept for JsonUtility but actual values
+            // are read via JsonHelper.ExtractFloat for correct defaults.
             public float anchor_min_x;
             public float anchor_min_y;
             public float anchor_max_x;

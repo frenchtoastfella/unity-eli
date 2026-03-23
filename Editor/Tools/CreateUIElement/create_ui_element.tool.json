@@ -1,6 +1,6 @@
 {
   "name": "create_ui_element",
-  "description": "Create a UI element as a child of an existing Canvas or UI GameObject. Supports creating Text (TextMeshPro), Image, Panel, and empty RectTransform containers. Sets up RectTransform anchoring, pivot, position, and size. For text elements, uses TextMeshProUGUI.",
+  "description": "Create a UI element as a child of an existing Canvas or UI GameObject. Supports creating Text (TextMeshPro), Image, Panel, Button, and empty RectTransform containers. The Button type creates an Image with a Button component and a child Text in one step. Sets up RectTransform anchoring, pivot, position, and size. For text elements, uses TextMeshProUGUI.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -14,34 +14,34 @@
       },
       "element_type": {
         "type": "string",
-        "enum": ["Text", "Image", "Panel", "Empty"],
-        "description": "The type of UI element to create. 'Text' adds TextMeshProUGUI, 'Image' adds Image, 'Panel' adds Image with semi-transparent background, 'Empty' creates an empty RectTransform container."
+        "enum": ["Text", "Image", "Panel", "Button", "Empty"],
+        "description": "The type of UI element to create. 'Text' adds TextMeshProUGUI, 'Image' adds Image, 'Panel' adds Image with semi-transparent background, 'Button' creates Image + Button + child Text in one step, 'Empty' creates an empty RectTransform container."
       },
       "text": {
         "type": "string",
-        "description": "The text content for Text elements. Ignored for other types."
+        "description": "The text content for Text and Button elements. Default 'Text' for Text, 'Button' for Button."
       },
       "font_size": {
         "type": "number",
-        "description": "Font size for Text elements. Default 36."
+        "description": "Font size for Text and Button elements. Default 36 for Text, 24 for Button."
       },
-      "text_color_r": { "type": "number", "description": "Text color red channel (0-1). Default 1 (white)." },
-      "text_color_g": { "type": "number", "description": "Text color green channel (0-1). Default 1 (white)." },
-      "text_color_b": { "type": "number", "description": "Text color blue channel (0-1). Default 1 (white)." },
+      "text_color_r": { "type": "number", "description": "Text color red channel (0-1). Default 1 (white) for Text, 0.2 (dark) for Button." },
+      "text_color_g": { "type": "number", "description": "Text color green channel (0-1). Default 1 (white) for Text, 0.2 (dark) for Button." },
+      "text_color_b": { "type": "number", "description": "Text color blue channel (0-1). Default 1 (white) for Text, 0.2 (dark) for Button." },
       "text_color_a": { "type": "number", "description": "Text color alpha channel (0-1). Default 1." },
       "text_alignment": {
         "type": "string",
         "enum": ["TopLeft", "Top", "TopRight", "Left", "Center", "Right", "BottomLeft", "Bottom", "BottomRight"],
-        "description": "Text alignment for Text elements. Default 'Center'."
+        "description": "Text alignment for Text and Button elements. Default 'Center'."
       },
-      "image_color_r": { "type": "number", "description": "Image/Panel color red channel (0-1). Default 1." },
-      "image_color_g": { "type": "number", "description": "Image/Panel color green channel (0-1). Default 1." },
-      "image_color_b": { "type": "number", "description": "Image/Panel color blue channel (0-1). Default 1." },
-      "image_color_a": { "type": "number", "description": "Image/Panel color alpha channel (0-1). Default 1 for Image, 0.4 for Panel." },
-      "anchor_min_x": { "type": "number", "description": "RectTransform anchorMin.x (0-1). Default 0.5." },
-      "anchor_min_y": { "type": "number", "description": "RectTransform anchorMin.y (0-1). Default 0.5." },
-      "anchor_max_x": { "type": "number", "description": "RectTransform anchorMax.x (0-1). Default 0.5." },
-      "anchor_max_y": { "type": "number", "description": "RectTransform anchorMax.y (0-1). Default 0.5." },
+      "image_color_r": { "type": "number", "description": "Image/Panel/Button background color red channel (0-1). Default 1." },
+      "image_color_g": { "type": "number", "description": "Image/Panel/Button background color green channel (0-1). Default 1." },
+      "image_color_b": { "type": "number", "description": "Image/Panel/Button background color blue channel (0-1). Default 1." },
+      "image_color_a": { "type": "number", "description": "Image/Panel/Button background color alpha channel (0-1). Default 1 for Image/Button, 0.4 for Panel." },
+      "anchor_min_x": { "type": "number", "description": "RectTransform anchorMin.x (0-1). Default 0.5 (centered)." },
+      "anchor_min_y": { "type": "number", "description": "RectTransform anchorMin.y (0-1). Default 0.5 (centered)." },
+      "anchor_max_x": { "type": "number", "description": "RectTransform anchorMax.x (0-1). Default 0.5 (centered)." },
+      "anchor_max_y": { "type": "number", "description": "RectTransform anchorMax.y (0-1). Default 0.5 (centered)." },
       "pivot_x": { "type": "number", "description": "RectTransform pivot.x (0-1). Default 0.5." },
       "pivot_y": { "type": "number", "description": "RectTransform pivot.y (0-1). Default 0.5." },
       "anchored_position_x": { "type": "number", "description": "RectTransform anchoredPosition.x in pixels. Default 0." },
