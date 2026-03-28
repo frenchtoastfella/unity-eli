@@ -1,13 +1,13 @@
 {
   "name": "play_mode",
-  "description": "Control Unity's Play mode: enter, exit, pause, or check status. Entering Play mode may trigger a domain reload — the MCP session will automatically reconnect afterward. Use 'stop' to return to Edit mode before making scene changes.",
+  "description": "Control Unity's Play mode and check editor status. The 'status' action reports both play mode state AND whether scripts are currently compiling — call it before scene-modifying operations to avoid losing work. Entering Play mode may trigger a domain reload — the MCP session will automatically reconnect afterward. Use 'stop' to return to Edit mode before making scene changes.",
   "input_schema": {
     "type": "object",
     "properties": {
       "action": {
         "type": "string",
         "enum": ["play", "stop", "pause", "status"],
-        "description": "The action to perform. 'play' enters Play mode, 'stop' exits to Edit mode, 'pause' toggles pause while playing, 'status' reports current mode. Default: 'status'."
+        "description": "The action to perform. 'play' enters Play mode, 'stop' exits to Edit mode, 'pause' toggles pause while playing, 'status' reports play mode AND compilation state. Default: 'status'."
       }
     },
     "required": []

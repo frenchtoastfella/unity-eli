@@ -1,6 +1,6 @@
 {
   "name": "edit_script",
-  "description": "Edit or overwrite an existing C# script file in the Unity project. Provide the full new content of the file. The path is relative to the Assets folder.",
+  "description": "Edit an existing C# script file. Two modes: (1) Find/replace — provide 'find' and 'replace' to do a targeted text substitution without rewriting the whole file. (2) Full rewrite — provide 'content' to replace the entire file. The path is relative to the Assets folder. After editing, Unity will recompile — wait for compilation to finish before using add_component with modified types.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -10,9 +10,17 @@
       },
       "content": {
         "type": "string",
-        "description": "The full new C# source code content to write to the file."
+        "description": "The full new C# source code content to write to the file. Use this for complete rewrites. Mutually exclusive with find/replace."
+      },
+      "find": {
+        "type": "string",
+        "description": "The exact text to find in the file. Must match exactly including whitespace/indentation. All occurrences will be replaced. Use with 'replace'."
+      },
+      "replace": {
+        "type": "string",
+        "description": "The text to replace each occurrence of 'find' with. Can be empty string to delete the matched text. Use with 'find'."
       }
     },
-    "required": ["file_path", "content"]
+    "required": ["file_path"]
   }
 }

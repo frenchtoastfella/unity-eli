@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,18 +19,36 @@ namespace UnityEli.Editor.Tools
             if (string.IsNullOrWhiteSpace(input.game_object))
                 return ToolResult.Error("game_object is required.");
 
-            var go = EliToolHelpers.FindGameObject(input.game_object);
-            if (go == null)
-                return ToolResult.Error($"GameObject '{input.game_object}' not found in the scene.");
+            // Support comma-separated names for batch deletion
+            var names = input.game_object.Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToArray();
 
-            int childCount = go.transform.childCount;
-            string summary = childCount > 0
-                ? $"Deleted '{input.game_object}' and its {childCount} child object(s)."
-                : $"Deleted '{input.game_object}'.";
+            var deleted = new List<string>();
+            var errors = new List<string>();
 
-            Undo.DestroyObjectImmediate(go);
+            foreach (var name in names)
+            {
+                var go = EliToolHelpers.FindGameObject(name);
+                if (go == null)
+                {
+                    errors.Add($"'{name}' not found");
+                    continue;
+                }
 
-            return ToolResult.Success(summary);
+                int childCount = go.transform.childCount;
+                Undo.DestroyObjectImmediate(go);
+                var info = childCount > 0 ? $"'{name}' (+{childCount} children)" : $"'{name}'";
+                deleted.Add(info);
+            }
+
+            if (deleted.Count == 0)
+                return ToolResult.Error($"Not found: {string.Join(", ", errors)}.");
+
+            var sb = new StringBuilder();
+            sb.Append($"Deleted {deleted.Count}: {string.Join(", ", deleted)}.");
+            if (errors.Count > 0)
+                sb.Append($" Not found: {string.Join(", ", errors)}.");
+
+            return ToolResult.Success(sb.ToString());
         }
 
         [Serializable]

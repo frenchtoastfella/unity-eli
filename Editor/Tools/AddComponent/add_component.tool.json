@@ -1,16 +1,16 @@
 {
   "name": "add_component",
-  "description": "Add a component to an existing GameObject in the current scene. Can add built-in Unity components (e.g. Rigidbody, BoxCollider, AudioSource) or custom script components by their class name. The script must already exist in the project.",
+  "description": "Add a component to one or more GameObjects. Supports comma-separated names to add the same component to multiple objects in one call (e.g. 'Enemy1,Enemy2,Boss'). The script must be compiled — if just created, call refresh_assets with wait_for_compilation=true first. Will error if Unity is compiling or in Play mode.",
   "input_schema": {
     "type": "object",
     "properties": {
       "game_object_name": {
         "type": "string",
-        "description": "The name of the GameObject to add the component to. Searches the entire scene hierarchy."
+        "description": "Name of the GameObject, or comma-separated names for batch add (e.g. 'Player,Enemy,NPC')."
       },
       "component_type": {
         "type": "string",
-        "description": "The type name of the component to add, e.g. 'Rigidbody', 'BoxCollider', 'AudioSource', or a custom script class name like 'PlayerController'."
+        "description": "The component type name, e.g. 'Rigidbody', 'BoxCollider', 'PlayerController'."
       }
     },
     "required": ["game_object_name", "component_type"]

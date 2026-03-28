@@ -19,8 +19,8 @@ namespace UnityEli.Editor.Tools
                 return ToolResult.Error("target_component is required.");
             if (string.IsNullOrWhiteSpace(input.field_name))
                 return ToolResult.Error("field_name is required.");
-            if (string.IsNullOrWhiteSpace(input.source_game_object))
-                return ToolResult.Error("source_game_object is required.");
+            if (string.IsNullOrWhiteSpace(input.source_game_object) && string.IsNullOrWhiteSpace(input.asset_path))
+                return ToolResult.Error("Either 'source_game_object' or 'asset_path' is required.");
 
             // Find the target GameObject
             var targetGo = EliToolHelpers.FindGameObject(input.target_game_object);
@@ -45,51 +45,63 @@ namespace UnityEli.Editor.Tools
             if (property.propertyType != SerializedPropertyType.ObjectReference)
                 return ToolResult.Error($"Field '{input.field_name}' is not an object reference field (type: {property.propertyType}).");
 
-            // Find the source GameObject
-            var sourceGo = EliToolHelpers.FindGameObject(input.source_game_object);
-            if (sourceGo == null)
-                return ToolResult.Error($"Source GameObject '{input.source_game_object}' not found in the scene.");
-
-            // Resolve what to assign
+            // Resolve the value to assign — either from a project asset or a scene GameObject
             UnityEngine.Object valueToAssign = null;
-            string assignedTypeName;
+            string assignedDesc;
 
-            if (!string.IsNullOrWhiteSpace(input.source_component))
+            if (!string.IsNullOrWhiteSpace(input.asset_path))
             {
-                // Explicit component type specified
-                var sourceCompType = EliToolHelpers.ResolveType(input.source_component);
-                if (sourceCompType == null)
-                    return ToolResult.Error($"Source component type '{input.source_component}' not found.");
-
-                if (typeof(Component).IsAssignableFrom(sourceCompType))
-                {
-                    var comp = sourceGo.GetComponent(sourceCompType);
-                    if (comp == null)
-                        return ToolResult.Error($"Source GameObject '{input.source_game_object}' does not have a '{input.source_component}' component.");
-                    valueToAssign = comp;
-                    assignedTypeName = input.source_component;
-                }
-                else
-                {
-                    return ToolResult.Error($"'{input.source_component}' is not a Component type.");
-                }
+                // Load from project asset path
+                valueToAssign = ResolveFromAsset(input.asset_path, input.source_component, property);
+                if (valueToAssign == null)
+                    return ToolResult.Error(
+                        $"Could not load asset at '{input.asset_path}'. " +
+                        "Make sure the path is correct (e.g. 'Assets/Prefabs/Resource.prefab').");
+                assignedDesc = $"asset '{input.asset_path}'";
             }
             else
             {
-                // Auto-detect: figure out the field's expected type and find the matching component
-                var fieldTypeName = GetFieldTypeName(property);
-                if (string.IsNullOrEmpty(fieldTypeName))
-                    return ToolResult.Error(
-                        $"Could not determine the expected type for field '{input.field_name}'. " +
-                        $"Try specifying 'source_component' explicitly.");
+                // Find the source GameObject in the scene
+                var sourceGo = EliToolHelpers.FindGameObject(input.source_game_object);
+                if (sourceGo == null)
+                    return ToolResult.Error($"Source GameObject '{input.source_game_object}' not found in the scene.");
 
-                valueToAssign = ResolveSourceValue(sourceGo, fieldTypeName);
-                assignedTypeName = fieldTypeName;
+                if (!string.IsNullOrWhiteSpace(input.source_component))
+                {
+                    // Explicit component type specified
+                    var sourceCompType = EliToolHelpers.ResolveType(input.source_component);
+                    if (sourceCompType == null)
+                        return ToolResult.Error($"Source component type '{input.source_component}' not found.");
 
-                if (valueToAssign == null)
-                    return ToolResult.Error(
-                        $"Could not find a matching reference on '{input.source_game_object}' for field '{input.field_name}' " +
-                        $"(expected type: {fieldTypeName}). Try specifying 'source_component' explicitly.");
+                    if (typeof(Component).IsAssignableFrom(sourceCompType))
+                    {
+                        var comp = sourceGo.GetComponent(sourceCompType);
+                        if (comp == null)
+                            return ToolResult.Error($"Source GameObject '{input.source_game_object}' does not have a '{input.source_component}' component.");
+                        valueToAssign = comp;
+                    }
+                    else
+                    {
+                        return ToolResult.Error($"'{input.source_component}' is not a Component type.");
+                    }
+                }
+                else
+                {
+                    // Auto-detect: figure out the field's expected type and find the matching component
+                    var fieldTypeName = GetFieldTypeName(property);
+                    if (string.IsNullOrEmpty(fieldTypeName))
+                        return ToolResult.Error(
+                            $"Could not determine the expected type for field '{input.field_name}'. " +
+                            $"Try specifying 'source_component' explicitly.");
+
+                    valueToAssign = ResolveSourceValue(sourceGo, fieldTypeName);
+
+                    if (valueToAssign == null)
+                        return ToolResult.Error(
+                            $"Could not find a matching reference on '{input.source_game_object}' for field '{input.field_name}' " +
+                            $"(expected type: {fieldTypeName}). Try specifying 'source_component' explicitly.");
+                }
+                assignedDesc = $"'{input.source_game_object}'";
             }
 
             // Assign the value
@@ -99,7 +111,40 @@ namespace UnityEli.Editor.Tools
 
             return ToolResult.Success(
                 $"Set '{input.target_component}.{input.field_name}' on '{input.target_game_object}' " +
-                $"to {assignedTypeName} from '{input.source_game_object}'.");
+                $"to {valueToAssign.GetType().Name} from {assignedDesc}.");
+        }
+
+        private static UnityEngine.Object ResolveFromAsset(string assetPath, string sourceComponent, SerializedProperty property)
+        {
+            // If a specific component type is requested, load the asset and get the component
+            if (!string.IsNullOrWhiteSpace(sourceComponent))
+            {
+                var sourceCompType = EliToolHelpers.ResolveType(sourceComponent);
+                if (sourceCompType != null)
+                {
+                    var asset = AssetDatabase.LoadAssetAtPath(assetPath, sourceCompType);
+                    if (asset != null) return asset;
+                }
+            }
+
+            // Try to load as the field's expected type
+            var fieldTypeName = GetFieldTypeName(property);
+            if (!string.IsNullOrEmpty(fieldTypeName))
+            {
+                var fieldType = EliToolHelpers.ResolveType(fieldTypeName);
+                if (fieldType != null)
+                {
+                    var asset = AssetDatabase.LoadAssetAtPath(assetPath, fieldType);
+                    if (asset != null) return asset;
+                }
+            }
+
+            // Fallback: load as GameObject (covers prefabs)
+            var goAsset = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            if (goAsset != null) return goAsset;
+
+            // Last resort: load as generic Object
+            return AssetDatabase.LoadMainAssetAtPath(assetPath);
         }
 
         private static UnityEngine.Object ResolveSourceValue(GameObject sourceGo, string fieldTypeName)
@@ -160,6 +205,7 @@ namespace UnityEli.Editor.Tools
             public string field_name;
             public string source_game_object;
             public string source_component;
+            public string asset_path;
         }
     }
 }

@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,11 +20,6 @@ namespace UnityEli.Editor.Tools
             if (string.IsNullOrWhiteSpace(input.game_object))
                 return ToolResult.Error("game_object is required.");
 
-            var go = EliToolHelpers.FindGameObject(input.game_object);
-            if (go == null)
-                return ToolResult.Error($"GameObject '{input.game_object}' not found in the scene.");
-
-            // Determine save path
             var folder = input.path;
             if (string.IsNullOrWhiteSpace(folder))
                 folder = "Assets/Prefabs";
@@ -29,47 +27,67 @@ namespace UnityEli.Editor.Tools
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            var fileName = input.file_name;
-            if (string.IsNullOrWhiteSpace(fileName))
-                fileName = go.name;
+            // Support comma-separated names for batch prefab creation
+            var names = input.game_object.Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToArray();
+            var created = new List<string>();
+            var errors = new List<string>();
 
-            if (!fileName.EndsWith(".prefab"))
-                fileName += ".prefab";
-
-            var fullPath = Path.Combine(folder, fileName);
-
-            // Check for existing prefab
-            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(fullPath);
-            if (existing != null)
+            foreach (var name in names)
             {
-                if (input.overwrite)
+                var go = EliToolHelpers.FindGameObject(name);
+                if (go == null)
                 {
-                    PrefabUtility.SaveAsPrefabAssetAndConnect(go, fullPath, InteractionMode.UserAction);
-                    return ToolResult.Success(
-                        $"Overwrote prefab at '{fullPath}' from scene GameObject '{go.name}'. " +
-                        $"The scene instance is now linked to this prefab.");
+                    errors.Add($"'{name}' not found");
+                    continue;
                 }
-                else
+
+                var fileName = name;
+                if (!fileName.EndsWith(".prefab"))
+                    fileName += ".prefab";
+
+                var fullPath = Path.Combine(folder, fileName);
+
+                var existing = AssetDatabase.LoadAssetAtPath<GameObject>(fullPath);
+                if (existing != null)
                 {
-                    return ToolResult.Error(
-                        $"Prefab already exists at '{fullPath}'. Set overwrite to true to replace it, " +
-                        "or use a different file_name.");
+                    if (input.overwrite)
+                    {
+                        PrefabUtility.SaveAsPrefabAssetAndConnect(go, fullPath, InteractionMode.UserAction);
+                        created.Add($"'{name}' (overwritten)");
+                    }
+                    else
+                    {
+                        errors.Add($"'{name}' already exists at '{fullPath}' (set overwrite=true to replace)");
+                    }
+                    continue;
                 }
+
+                var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, fullPath, InteractionMode.UserAction);
+                if (prefab == null)
+                {
+                    errors.Add($"Failed to create '{fullPath}'");
+                    continue;
+                }
+
+                created.Add($"'{name}' → {fullPath}");
             }
 
-            // Create the prefab and connect the scene instance to it
-            var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, fullPath, InteractionMode.UserAction);
-            if (prefab == null)
-                return ToolResult.Error($"Failed to create prefab at '{fullPath}'.");
+            // Handle single-object mode with custom file_name
+            if (names.Length == 1 && created.Count == 0 && errors.Count == 0)
+            {
+                // This shouldn't happen but handle gracefully
+                return ToolResult.Error($"GameObject '{names[0]}' not found.");
+            }
 
-            int componentCount = prefab.GetComponents<Component>().Length;
-            int childCount = prefab.transform.childCount;
+            if (created.Count == 0 && errors.Count > 0)
+                return ToolResult.Error($"Failed: {string.Join("; ", errors)}.");
 
-            var summary = $"Created prefab at '{fullPath}' from scene GameObject '{go.name}' " +
-                          $"({componentCount} components, {childCount} children). " +
-                          "The scene instance is now linked to this prefab.";
+            var sb = new StringBuilder();
+            sb.Append($"Created {created.Count} prefab(s): {string.Join(", ", created)}.");
+            if (errors.Count > 0)
+                sb.Append($" Errors: {string.Join("; ", errors)}.");
 
-            return ToolResult.Success(summary);
+            return ToolResult.Success(sb.ToString());
         }
 
         [Serializable]

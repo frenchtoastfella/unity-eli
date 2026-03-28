@@ -326,22 +326,26 @@ namespace UnityEli.Editor
         private void DrawInputArea()
         {
             EditorGUILayout.BeginHorizontal();
-            GUI.enabled = !_isProcessing;
             var e = Event.current;
 
-            // Ctrl+Enter = submit, plain Enter = new line (handled by TextArea naturally).
+            // Ctrl+Enter = submit (or Escape to stop when processing)
             bool enterPressed = false;
             var isChatInputFocused = GUI.GetNameOfFocusedControl() == "ChatInput";
-            if (e.type == EventType.KeyDown && isChatInputFocused && IsEnterKey(e))
+            if (e.type == EventType.KeyDown && isChatInputFocused)
             {
-                if (e.control || e.command)
+                if (IsEnterKey(e) && (e.control || e.command) && !_isProcessing)
                 {
                     enterPressed = true;
                     e.Use();
                 }
-                // Plain Enter / Shift+Enter: let TextArea handle it (inserts newline).
+                else if (e.keyCode == KeyCode.Escape && _isProcessing)
+                {
+                    StopProcessing();
+                    e.Use();
+                }
             }
 
+            GUI.enabled = !_isProcessing;
             var lineHeight = _inputTextAreaStyle.lineHeight > 0 ? _inputTextAreaStyle.lineHeight : 16f;
             var content = new GUIContent(_inputText);
             var textWidth = position.width - 60 - 20;
@@ -351,16 +355,39 @@ namespace UnityEli.Editor
             var textAreaHeight = Mathf.Clamp(calculatedHeight, minHeight, maxHeight);
             GUI.SetNextControlName("ChatInput");
             _inputText = EditorGUILayout.TextArea(_inputText, _inputTextAreaStyle, GUILayout.ExpandWidth(true), GUILayout.Height(textAreaHeight));
-            var buttonContent = _sendIcon != null ? new GUIContent(_sendIcon) : new GUIContent("Send");
-            var sendClicked = GUILayout.Button(buttonContent, _sendButtonStyle, GUILayout.Width(40), GUILayout.Height(textAreaHeight));
             GUI.enabled = true;
-            if ((enterPressed || sendClicked) && !string.IsNullOrWhiteSpace(_inputText) && !_isProcessing)
-                SendUserMessage();
+
+            if (_isProcessing)
+            {
+                // Show Stop button while processing
+                var stopStyle = new GUIStyle(_sendButtonStyle) { normal = { textColor = Color.red } };
+                if (GUILayout.Button("Stop", stopStyle, GUILayout.Width(40), GUILayout.Height(textAreaHeight)))
+                    StopProcessing();
+            }
+            else
+            {
+                var buttonContent = _sendIcon != null ? new GUIContent(_sendIcon) : new GUIContent("Send");
+                var sendClicked = GUILayout.Button(buttonContent, _sendButtonStyle, GUILayout.Width(40), GUILayout.Height(textAreaHeight));
+                if ((enterPressed || sendClicked) && !string.IsNullOrWhiteSpace(_inputText))
+                    SendUserMessage();
+            }
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField("Ctrl+Enter to send", EditorStyles.miniLabel, GUILayout.Width(140));
+            var hint = _isProcessing ? "Escape or Stop to cancel" : "Ctrl+Enter to send";
+            EditorGUILayout.LabelField(hint, EditorStyles.miniLabel, GUILayout.Width(160));
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void StopProcessing()
+        {
+            ClaudeCodeProcess.Cancel();
+            _isProcessing = false;
+            _lastRequestFailed = false;
+            _messages.Add(new DisplayMessage("System", "(Stopped by user)"));
+            SaveState();
+            Repaint();
         }
 
         private void DrawWizardInput()
@@ -1141,7 +1168,7 @@ namespace UnityEli.Editor
             if (_inputTextAreaStyle == null)
                 _inputTextAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true, padding = new RectOffset(8, 8, 8, 8) };
             if (_sendButtonStyle == null)
-                _sendButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 16, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+                _sendButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
         }
     }
 }

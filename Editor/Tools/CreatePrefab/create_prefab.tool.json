@@ -1,24 +1,24 @@
 {
   "name": "create_prefab",
-  "description": "Create a prefab asset from a GameObject in the scene. The scene instance becomes linked to the prefab. Includes all components, children, and their settings.",
+  "description": "Create prefab assets from one or more scene GameObjects. Supports comma-separated names (e.g. 'Tree,Rock,Bush') to create multiple prefabs in one call to the same folder. Each prefab is named after its GameObject.",
   "input_schema": {
     "type": "object",
     "properties": {
       "game_object": {
         "type": "string",
-        "description": "The name of the scene GameObject to save as a prefab."
+        "description": "Name of the scene GameObject, or comma-separated names for batch creation (e.g. 'Tree,Rock,Bush')."
       },
       "path": {
         "type": "string",
-        "description": "Optional. Folder path for the prefab. Defaults to 'Assets/Prefabs'."
+        "description": "Folder path for the prefab(s). Default 'Assets/Prefabs'."
       },
       "file_name": {
         "type": "string",
-        "description": "Optional. Prefab file name (without or with .prefab extension). Defaults to the GameObject's name."
+        "description": "Custom file name (single mode only). Defaults to the GameObject's name."
       },
       "overwrite": {
         "type": "boolean",
-        "description": "Optional (default false). If true, overwrites an existing prefab at the same path."
+        "description": "If true, overwrites existing prefabs. Default false."
       }
     },
     "required": ["game_object"]

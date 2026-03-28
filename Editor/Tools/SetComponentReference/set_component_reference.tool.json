@@ -1,6 +1,6 @@
 {
   "name": "set_component_reference",
-  "description": "Set a serialized field (reference) on a component attached to a GameObject. This works like dragging and dropping in the Unity Inspector. Can assign GameObjects, Components (e.g. TextMeshProUGUI, Rigidbody, Image), Materials, or any UnityEngine.Object to a [SerializeField] or public field. The tool finds the source GameObject by name and automatically resolves the correct component type to match the field.",
+  "description": "Set a serialized field (reference) on a component attached to a GameObject. This works like dragging and dropping in the Unity Inspector. Can assign scene GameObjects, Components, or project assets (prefabs, materials, sprites, ScriptableObjects, etc.). Use 'source_game_object' for scene objects or 'asset_path' for project assets. The tool automatically resolves the correct type to match the field.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -14,17 +14,21 @@
       },
       "field_name": {
         "type": "string",
-        "description": "The name of the serialized field to set, e.g. 'pointsCounter', 'playerRigidbody'. Use the C# field name, not the Inspector display name."
+        "description": "The name of the serialized field to set, e.g. 'pointsCounter', 'playerRigidbody', 'resourcePrefab'. Use the C# field name, not the Inspector display name."
       },
       "source_game_object": {
         "type": "string",
-        "description": "The name of the GameObject to assign (or to find the component on). The tool will automatically resolve the correct component from this GameObject to match the field type."
+        "description": "The name of a scene GameObject to assign (or to find the component on). Mutually exclusive with 'asset_path'."
+      },
+      "asset_path": {
+        "type": "string",
+        "description": "Path to a project asset to assign, e.g. 'Assets/Prefabs/Resource.prefab', 'Assets/Materials/Wood.mat', 'Assets/Sprites/Icon.png'. Use this for prefabs, materials, sprites, ScriptableObjects, and other project assets. Mutually exclusive with 'source_game_object'."
       },
       "source_component": {
         "type": "string",
-        "description": "Optional. The specific component type name to get from the source GameObject, e.g. 'TextMeshProUGUI', 'Rigidbody'. If omitted, the tool will auto-detect the correct component type based on the field's type. Use this when the auto-detection picks the wrong component."
+        "description": "Optional. The specific component type name to get from the source, e.g. 'TextMeshProUGUI', 'Rigidbody'. If omitted, the tool will auto-detect the correct type based on the field's type."
       }
     },
-    "required": ["target_game_object", "target_component", "field_name", "source_game_object"]
+    "required": ["target_game_object", "target_component", "field_name"]
   }
 }

@@ -1,0 +1,28 @@
+{
+  "name": "batch_execute",
+  "description": "Execute multiple tool calls in a single round trip. MUCH faster than calling tools one at a time — use this whenever you need to make 2 or more tool calls. Each entry specifies a tool name and its arguments. Tools run sequentially so earlier results (e.g. created GameObjects) are available to later calls. Example: create 3 objects and set their colors in one batch instead of 6 separate calls.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "calls": {
+        "type": "array",
+        "description": "Array of tool calls to execute in order.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "type": "string",
+              "description": "The tool name to call (e.g. 'create_gameobject', 'set_renderer_color', 'add_component')."
+            },
+            "arguments": {
+              "type": "object",
+              "description": "The arguments to pass to the tool, same as if calling it directly."
+            }
+          },
+          "required": ["tool", "arguments"]
+        }
+      }
+    },
+    "required": ["calls"]
+  }
+}

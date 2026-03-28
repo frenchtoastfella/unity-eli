@@ -1,12 +1,12 @@
 {
   "name": "delete_game_object",
-  "description": "Delete a GameObject from the scene. This also deletes all of its children. The deletion is undoable via Edit > Undo.",
+  "description": "Delete one or more GameObjects from the scene. Supports comma-separated names for batch deletion (e.g. 'Enemy1,Enemy2,Spawner'). Also deletes all children. Undoable via Edit > Undo.",
   "input_schema": {
     "type": "object",
     "properties": {
       "game_object": {
         "type": "string",
-        "description": "The name of the GameObject to delete."
+        "description": "Name of the GameObject to delete, or comma-separated names for batch deletion (e.g. 'Cube,Sphere,Light')."
       }
     },
     "required": ["game_object"]

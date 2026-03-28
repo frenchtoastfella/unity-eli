@@ -15,6 +15,8 @@ namespace UnityEli.Editor.Tools
             switch (action.ToLowerInvariant())
             {
                 case "play":
+                    if (EditorApplication.isCompiling)
+                        return ToolResult.Error("Cannot enter Play mode while scripts are compiling. Wait for compilation to finish first.");
                     if (EditorApplication.isPlaying)
                         return ToolResult.Success("Already in Play mode.");
                     EditorApplication.isPlaying = true;
@@ -33,13 +35,32 @@ namespace UnityEli.Editor.Tools
                     return ToolResult.Success(EditorApplication.isPaused ? "Play mode paused." : "Play mode resumed.");
 
                 case "status":
-                    if (!EditorApplication.isPlaying)
-                        return ToolResult.Success("Edit mode (not playing).");
-                    return ToolResult.Success(EditorApplication.isPaused ? "Play mode (paused)." : "Play mode (running).");
+                    return GetStatus();
 
                 default:
                     return ToolResult.Error($"Unknown action '{action}'. Valid actions: play, stop, pause, status.");
             }
+        }
+
+        private static string GetStatus()
+        {
+            var parts = new System.Collections.Generic.List<string>();
+
+            // Play mode
+            if (!EditorApplication.isPlaying)
+                parts.Add("Edit mode (not playing)");
+            else if (EditorApplication.isPaused)
+                parts.Add("Play mode (paused)");
+            else
+                parts.Add("Play mode (running)");
+
+            // Compilation
+            if (EditorApplication.isCompiling)
+                parts.Add("Scripts are compiling");
+            else
+                parts.Add("No compilation in progress");
+
+            return ToolResult.Success(string.Join(". ", parts) + ".");
         }
     }
 }

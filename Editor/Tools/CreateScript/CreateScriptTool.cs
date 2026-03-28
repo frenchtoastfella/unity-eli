@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityEli.Editor.Tools
@@ -41,8 +42,12 @@ namespace UnityEli.Editor.Tools
             }
 
             File.WriteAllText(fullPath, input.content);
-            
-            return ToolResult.Success($"Script created at '{fullPath}'.");
+
+            return ToolResult.Success(
+                $"Script created at '{fullPath}'. " +
+                "IMPORTANT: Unity will now compile this script. Wait for compilation to complete " +
+                "(call refresh_assets with wait_for_compilation=true) before creating GameObjects " +
+                "or adding this component — otherwise the scene may reload and lose objects.");
         }
 
         [System.Serializable]

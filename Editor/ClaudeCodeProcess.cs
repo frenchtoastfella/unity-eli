@@ -44,7 +44,6 @@ namespace UnityEli.Editor
         private const string StderrPathKey = "UnityEli_StderrPath";
         private const string PromptPathKey = "UnityEli_PromptPath";
         private const string ReadOffsetKey = "UnityEli_ReadOffset";
-        private const string McpRegisteredPortKey = "UnityEli_McpRegisteredPort";
 
         static ClaudeCodeProcess()
         {
@@ -77,14 +76,8 @@ namespace UnityEli.Editor
                 return;
             }
 
-            // Approach 1: Register the MCP server with Claude's own config
-            EnsureMcpServerRegistered(mcpPort);
-
-            // Approach 2: Write .mcp.json to project root (auto-discovered by Claude)
+            // Write .mcp.json to project root (auto-discovered by Claude Code)
             WriteMcpJsonToProject(mcpPort);
-
-            // Approach 3: Write temp config for --mcp-config flag
-            var mcpConfigPath = WriteMcpConfig(mcpPort);
 
             // Write prompt to a temp file (avoids stdin pipe issues across domain reloads)
             var promptPath = Path.Combine(Application.temporaryCachePath, "unity-eli-prompt.txt");
@@ -102,7 +95,7 @@ namespace UnityEli.Editor
             try { File.WriteAllText(stdoutPath, "", Utf8NoBom); } catch { }
             try { File.WriteAllText(stderrPath, "", Utf8NoBom); } catch { }
 
-            var cliArgs = BuildArguments(sessionId, mcpConfigPath);
+            var cliArgs = BuildArguments(sessionId);
 
             try
             {
@@ -148,74 +141,6 @@ namespace UnityEli.Editor
             KillProcess();
             Cleanup();
             ClearSessionState();
-        }
-
-        // ── MCP server registration ──────────────────────────────────────────
-
-        /// <summary>
-        /// Registers the Unity MCP server with Claude Code's local config via 'claude mcp add'.
-        /// This is more reliable on Windows than --mcp-config which has known issues.
-        /// Only runs when the port has changed since last registration.
-        /// </summary>
-        private static void EnsureMcpServerRegistered(int port)
-        {
-            var lastPort = SessionState.GetInt(McpRegisteredPortKey, 0);
-            if (lastPort == port) return;
-
-            Debug.Log($"[Unity Eli] Registering MCP server on port {port}...");
-
-            // Remove any existing entry (may fail if none exists — that's fine)
-            RunClaudeSync("mcp remove --scope local unity");
-
-            // Add with the current port
-            var success = RunClaudeSync(
-                $"mcp add --transport http --scope local unity http://localhost:{port}/mcp/");
-
-            if (success)
-            {
-                SessionState.SetInt(McpRegisteredPortKey, port);
-                Debug.Log($"[Unity Eli] MCP server registered on port {port}");
-            }
-            else
-            {
-                // "already exists" is fine — the server is registered, just possibly at the old port.
-                // The .mcp.json file (written separately) always has the current port as backup.
-                SessionState.SetInt(McpRegisteredPortKey, port);
-                Debug.Log("[Unity Eli] MCP server already registered (using .mcp.json for current port).");
-            }
-        }
-
-        /// <summary>Runs a claude CLI command synchronously and returns true if exit code is 0.</summary>
-        private static bool RunClaudeSync(string args)
-        {
-            try
-            {
-                var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-                var psi = new ProcessStartInfo
-                {
-                    FileName = ResolveClaudePath(),
-                    Arguments = args,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    WorkingDirectory = projectRoot,
-                };
-                using (var proc = Process.Start(psi))
-                {
-                    var stdout = proc.StandardOutput.ReadToEnd();
-                    var stderr = proc.StandardError.ReadToEnd();
-                    proc.WaitForExit(15000);
-                    if (proc.ExitCode != 0 && !string.IsNullOrWhiteSpace(stderr))
-                        Debug.Log($"[Unity Eli] claude {args} → exit {proc.ExitCode}: {stderr.Trim()}");
-                    return proc.ExitCode == 0;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[Unity Eli] Failed to run 'claude {args}': {e.Message}");
-                return false;
-            }
         }
 
         // ── Process launch ───────────────────────────────────────────────────
@@ -637,17 +562,13 @@ namespace UnityEli.Editor
 
         // ── Argument building ────────────────────────────────────────────────
 
-        private static string BuildArguments(string sessionId, string mcpConfigPath)
+        private static string BuildArguments(string sessionId)
         {
             var sb = new StringBuilder();
 
             sb.Append("-p");
             sb.Append(" --output-format stream-json");
-            sb.Append(" --verbose");
-
-            // Pass --mcp-config as fallback (also registered via 'claude mcp add' and .mcp.json)
-            if (!string.IsNullOrEmpty(mcpConfigPath))
-                sb.Append($" --mcp-config \"{mcpConfigPath}\"");
+            sb.Append(" --verbose"); // required by --output-format stream-json in print mode
 
             sb.Append(" --allowedTools ");
             sb.Append(UnityEliSettings.BuildAllowedToolsArgs());
@@ -669,24 +590,6 @@ namespace UnityEli.Editor
         }
 
         // ── MCP config helpers ────────────────────────────────────────────────
-
-        /// <summary>Writes a temp MCP config file for --mcp-config flag.</summary>
-        private static string WriteMcpConfig(int port)
-        {
-            try
-            {
-                var config = BuildMcpConfigJson(port);
-                var path = Path.Combine(Application.temporaryCachePath, "unity-eli-mcp.json");
-                File.WriteAllText(path, config, Utf8NoBom);
-                Debug.Log($"[Unity Eli] MCP config ({path}): {config}");
-                return path;
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[Unity Eli] Failed to write MCP config: {e.Message}");
-                return null;
-            }
-        }
 
         /// <summary>
         /// Writes .mcp.json to the project root so Claude auto-discovers the MCP server.

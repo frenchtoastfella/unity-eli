@@ -4,24 +4,24 @@ All notable changes to this package will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
-## [1.1.0] - 2026-03-23
+## [1.2.0] - 2026-03-28
 
 ### Added
-- **Button support** in `create_ui_element` tool — creates Image + Button component + child Text in one step.
-- **RectTransform channels** in `set_transform` tool — new `anchors`, `pivot`, `anchored_position`, and `size_delta` channels with `w` parameter for anchor max Y.
-- **Empty scene setup** in `manage_scene` tool — new `setup` parameter (`empty`/`default`) for the `new` action.
-- `JsonHelper.ExtractFloat` utility for extracting float values from raw JSON with correct defaults.
-
-### Fixed
-- **Claude CLI not found** — new `ResolveClaudePath()` probes common npm global install locations and falls back to `where`/`which`, fixing Unity not inheriting the full user PATH.
-- **Tool definitions not loading** when installed as a Git URL package — `ToolRegistry` now uses `PackageInfo.FindForAssembly` to locate `.tool.json` files regardless of install method.
-- **MCP server registration** — uses `--scope local` for removal, gracefully handles "already exists", and falls back to `.mcp.json` for the current port.
-- **UI anchor/pivot/size defaults** — `CreateUIElementTool` now uses `JsonHelper.ExtractFloat` instead of `JsonUtility` zero-default detection, fixing incorrect anchor values when fields are omitted.
-- `set_component_property` error message now lists available RectTransform channels when redirecting to `set_transform`.
+- **`batch_execute` tool** — execute multiple tool calls in a single MCP round trip, dramatically reducing latency when performing multi-step operations (e.g. create 3 objects and color them in one call instead of 6).
+- **Batch/multi-object support** across core tools — `add_component`, `create_gameobject`, `create_prefab`, `delete_game_object`, and `set_renderer_color` now accept comma-separated names or `objects` arrays to operate on multiple GameObjects in one call.
+- **Find/replace mode** for `edit_script` — new `find` and `replace` parameters allow targeted text substitution without rewriting the entire file.
+- **Asset path references** in `set_component_reference` — new `asset_path` parameter to assign project assets (prefabs, materials, sprites, ScriptableObjects) to serialized fields, not just scene objects.
+- **Stop button & Escape key** in the chat window — cancel a running Claude request at any time.
+- **Compilation and Play mode guards** on `add_component`, `create_gameobject`, and `play_mode` — tools now return clear error messages when Unity is compiling or in Play mode, preventing silent data loss.
+- **Enhanced `play_mode` status** — the `status` action now reports both play mode state and whether scripts are currently compiling.
+- `create_script` and `edit_script` now remind Claude to wait for compilation before adding components.
 
 ### Changed
-- Chat input now uses **Ctrl+Enter to send** (was Enter). Plain Enter inserts a newline, matching typical multi-line editor behavior.
-- Screenshot tool description clarifies `game` source is preferred for UI work.
+- Simplified MCP server registration — removed `claude mcp add/remove` and `--mcp-config` flag approaches; now relies solely on `.mcp.json` auto-discovery, which is more reliable.
+- Send button font size reduced (16 → 12) for better fit.
+
+### Removed
+- `EnsureMcpServerRegistered()`, `RunClaudeSync()`, and `WriteMcpConfig()` helper methods from `ClaudeCodeProcess` (replaced by `.mcp.json` auto-discovery).
 
 ## [1.0.1] - 2026-03-23
 

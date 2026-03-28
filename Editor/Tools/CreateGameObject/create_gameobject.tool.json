@@ -1,29 +1,54 @@
 {
   "name": "create_gameobject",
-  "description": "Create a new GameObject in the current scene. Optionally create it from a primitive type (Cube, Sphere, Capsule, Cylinder, Plane, Quad). You can set its position, rotation (euler angles), scale, and an optional parent.",
+  "description": "Create one or more GameObjects in the current scene. For a single object, pass name/primitive_type/parent/position directly. For multiple objects in one call (MUCH faster), pass an 'objects' array where each entry has the same fields. Batch mode avoids round-trip delays — always prefer it when creating 2+ objects.",
   "input_schema": {
     "type": "object",
     "properties": {
       "name": {
         "type": "string",
-        "description": "The name of the GameObject."
+        "description": "Name of the GameObject (single mode)."
       },
       "primitive_type": {
         "type": "string",
-        "enum": ["None", "Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad"],
-        "description": "Optional primitive type. Use 'None' or omit for an empty GameObject."
+        "enum": ["Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad", "None"],
+        "description": "Optional primitive mesh type. 'None' or omit for empty GameObject."
+      },
+      "parent": {
+        "type": "string",
+        "description": "Optional parent GameObject name. The new object will be a child of this."
       },
       "position_x": { "type": "number", "description": "World X position. Default 0." },
       "position_y": { "type": "number", "description": "World Y position. Default 0." },
       "position_z": { "type": "number", "description": "World Z position. Default 0." },
-      "rotation_x": { "type": "number", "description": "Euler rotation X in degrees. Default 0." },
-      "rotation_y": { "type": "number", "description": "Euler rotation Y in degrees. Default 0." },
-      "rotation_z": { "type": "number", "description": "Euler rotation Z in degrees. Default 0." },
-      "scale_x": { "type": "number", "description": "Scale X. Default 1." },
-      "scale_y": { "type": "number", "description": "Scale Y. Default 1." },
-      "scale_z": { "type": "number", "description": "Scale Z. Default 1." },
-      "parent": { "type": "string", "description": "Optional name of an existing GameObject to set as the parent." }
+      "rotation_x": { "type": "number", "description": "Euler X rotation. Default 0." },
+      "rotation_y": { "type": "number", "description": "Euler Y rotation. Default 0." },
+      "rotation_z": { "type": "number", "description": "Euler Z rotation. Default 0." },
+      "scale_x": { "type": "number", "description": "Local X scale. Default 1." },
+      "scale_y": { "type": "number", "description": "Local Y scale. Default 1." },
+      "scale_z": { "type": "number", "description": "Local Z scale. Default 1." },
+      "objects": {
+        "type": "array",
+        "description": "Batch mode: array of objects to create. Each entry has the same fields as above (name, primitive_type, parent, position_x, etc.). Objects are created in order so earlier objects can be parents of later ones.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "primitive_type": { "type": "string" },
+            "parent": { "type": "string" },
+            "position_x": { "type": "number" },
+            "position_y": { "type": "number" },
+            "position_z": { "type": "number" },
+            "rotation_x": { "type": "number" },
+            "rotation_y": { "type": "number" },
+            "rotation_z": { "type": "number" },
+            "scale_x": { "type": "number" },
+            "scale_y": { "type": "number" },
+            "scale_z": { "type": "number" }
+          },
+          "required": ["name"]
+        }
+      }
     },
-    "required": ["name"]
+    "required": []
   }
 }
