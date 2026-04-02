@@ -1,0 +1,40 @@
+{
+  "name": "meshy_generate_model",
+  "description": "Generate a 3D model using Meshy.ai. Call without refine_task_id to create a new model (preview/mesh stage). Call with refine_task_id to add textures to a completed preview (refine stage). After calling, poll with meshy_check_task until complete. IMPORTANT: This costs Meshy.ai credits (5-20 for preview, 10 for texturing). If the user has not explicitly asked you to generate a 3D model, you MUST ask for their confirmation before calling this tool. If the user directly requested model generation, proceed without asking.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "Text description of the 3D model to generate, e.g. 'a medieval wooden treasure chest with iron bands'. Required for preview, ignored for refine."
+      },
+      "refine_task_id": {
+        "type": "string",
+        "description": "If set, creates a refine (texturing) task for this completed preview task ID instead of a new preview."
+      },
+      "ai_model": {
+        "type": "string",
+        "enum": ["meshy-4", "meshy-5", "meshy-6"],
+        "description": "Meshy AI model version. Default: 'meshy-4'. Higher versions produce better quality but may cost more credits."
+      },
+      "topology": {
+        "type": "string",
+        "enum": ["triangle", "quad"],
+        "description": "Mesh topology. Default: 'triangle'."
+      },
+      "target_polycount": {
+        "type": "integer",
+        "description": "Target polygon count (triangles). Range: 100-300000. You MUST always set this based on asset type: hero/character assets up to 100000, environment assets (buildings, terrain pieces) up to 10000, props (items, furniture, small objects) up to 3000. Infer the asset type from the prompt."
+      },
+      "enable_pbr": {
+        "type": "boolean",
+        "description": "Generate PBR texture maps (metallic, roughness, normal) during refine. Default: true."
+      },
+      "texture_prompt": {
+        "type": "string",
+        "description": "Optional additional guidance for texturing during refine stage."
+      }
+    },
+    "required": []
+  }
+}

@@ -39,6 +39,14 @@ namespace UnityEli.Editor
         // ── Tool batch expand state ──────────────────────────────────────────
         private HashSet<int> _expandedBatches = new HashSet<int>();
 
+        // ── Chat virtualization ──────────────────────────────────────────────
+        /// <summary>Number of recent messages to render by default. Older messages are hidden for performance.</summary>
+        private const int DefaultVisibleMessages = 8; // ~3 exchanges + system/error messages
+        private bool _showAllMessages;
+
+        // ── Markdown cache ───────────────────────────────────────────────────
+        private static readonly Dictionary<string, string> _markdownCache = new Dictionary<string, string>();
+
         // ── Wizard state ──────────────────────────────────────────────────────
         private struct WizardQuestion
         {
@@ -570,7 +578,26 @@ namespace UnityEli.Editor
                 if (GUILayout.Button("Retry", GUILayout.Width(60), GUILayout.Height(38))) RetryLastMessage();
                 EditorGUILayout.EndHorizontal();
             }
-            for (int i = _messages.Count - 1; i >= 0; i--) DrawMessage(_messages[i]);
+            // Only render recent messages by default for performance
+            int startIndex = 0;
+            int hiddenCount = 0;
+            if (!_showAllMessages && _messages.Count > DefaultVisibleMessages)
+            {
+                startIndex = _messages.Count - DefaultVisibleMessages;
+                hiddenCount = startIndex;
+            }
+
+            for (int i = _messages.Count - 1; i >= startIndex; i--) DrawMessage(_messages[i]);
+
+            if (hiddenCount > 0)
+            {
+                GUILayout.Space(4);
+                var btnStyle = new GUIStyle(EditorStyles.miniButton) { richText = true };
+                if (GUILayout.Button($"Show {hiddenCount} earlier message{(hiddenCount > 1 ? "s" : "")}", btnStyle))
+                    _showAllMessages = true;
+                GUILayout.Space(4);
+            }
+
             EditorGUILayout.EndScrollView();
         }
 
@@ -623,30 +650,24 @@ namespace UnityEli.Editor
                         { hasTextAfter = true; break; }
                     }
 
-                    // Also consider done if we're not currently processing
-                    bool batchDone = hasTextAfter || (!_isProcessing && batchCount > 0);
-                    bool allResolved = true;
+                    // Batch is done if text follows or processing has finished
+                    bool batchDone = hasTextAfter || !_isProcessing;
                     int errorCount = 0;
                     for (int j = batchStart; j < batchStart + batchCount; j++)
                     {
-                        var t = message.Blocks[j].Tool;
-                        if (t != null && string.IsNullOrEmpty(t.Result)) allResolved = false;
-                        if (t != null && t.IsError) errorCount++;
+                        if (message.Blocks[j].Tool != null && message.Blocks[j].Tool.IsError)
+                            errorCount++;
                     }
 
-                    if (batchDone && allResolved && batchCount > 1)
+                    if (batchDone && batchCount > 1)
                     {
                         // Render as a collapsible single-line summary
                         DrawToolBatch(message.Blocks, batchStart, batchCount, errorCount);
                     }
                     else
                     {
-                        // Still running or single tool — render individually
-                        for (int j = batchStart; j < batchStart + batchCount; j++)
-                        {
-                            if (message.Blocks[j].Tool != null)
-                                DrawToolEntry(message.Blocks[j].Tool);
-                        }
+                        // Still running or single tool — render with identical-name grouping
+                        DrawToolsGrouped(message.Blocks, batchStart, batchCount);
                     }
                 }
                 else
@@ -740,13 +761,77 @@ namespace UnityEli.Editor
 
             if (newExpanded)
             {
-                for (int j = start; j < start + count; j++)
-                {
-                    if (blocks[j].Tool != null)
-                        DrawToolEntry(blocks[j].Tool);
-                }
+                DrawToolsGrouped(blocks, start, count);
             }
             EditorGUI.indentLevel--;
+        }
+
+        /// <summary>
+        /// Draws tool entries with consecutive identical tool names crunched into a single line.
+        /// e.g. "meshy_check_task (x5)" instead of 5 separate entries.
+        /// The last tool in a same-name run is shown individually if still running.
+        /// </summary>
+        private void DrawToolsGrouped(List<MessageBlock> blocks, int start, int count)
+        {
+            int j = start;
+            int end = start + count;
+            while (j < end)
+            {
+                var tool = blocks[j].Tool;
+                if (tool == null) { j++; continue; }
+
+                // Count consecutive tools with the same name
+                var name = tool.Name;
+                int runStart = j;
+                while (j < end && blocks[j].Tool != null && blocks[j].Tool.Name == name)
+                    j++;
+                int runCount = j - runStart;
+
+                if (runCount <= 1)
+                {
+                    // Single tool — render normally
+                    DrawToolEntry(tool);
+                    continue;
+                }
+
+                // Multiple identical tools — split into resolved and the trailing unresolved one
+                int resolvedCount = 0;
+                ToolEntry lastUnresolved = null;
+                for (int k = runStart; k < runStart + runCount; k++)
+                {
+                    var t = blocks[k].Tool;
+                    if (t != null && !string.IsNullOrEmpty(t.Result))
+                        resolvedCount++;
+                    else
+                        lastUnresolved = t;
+                }
+
+                if (resolvedCount > 0)
+                {
+                    // Draw crunched line: "tool_name (x5)"
+                    var displayName = CleanToolName(name);
+                    int errors = 0;
+                    for (int k = runStart; k < runStart + runCount; k++)
+                    {
+                        if (blocks[k].Tool != null && blocks[k].Tool.IsError) errors++;
+                    }
+
+                    var label = $"{displayName} (x{resolvedCount})";
+                    if (errors > 0) label += $" ({errors} error{(errors > 1 ? "s" : "")})";
+
+                    EditorGUI.indentLevel++;
+                    var style = new GUIStyle(EditorStyles.miniLabel) { fontStyle = FontStyle.Italic };
+                    style.normal.textColor = errors > 0
+                        ? new Color(1f, 0.6f, 0.4f)
+                        : new Color(0.6f, 0.6f, 0.6f);
+                    GUILayout.Label(label, style);
+                    EditorGUI.indentLevel--;
+                }
+
+                // Show the last unresolved tool individually (running...)
+                if (lastUnresolved != null)
+                    DrawToolEntry(lastUnresolved);
+            }
         }
 
         private static string CleanToolName(string name)
@@ -801,9 +886,13 @@ namespace UnityEli.Editor
             _messages.Add(new DisplayMessage("User", userText));
             _inputText = string.Empty;
             _isProcessing = true; _lastRequestFailed = false; _scrollPosition = Vector2.zero;
+            _showAllMessages = false; // re-collapse for performance
             GUI.FocusControl(null);
             SaveState();
             if (!McpServer.IsRunning) McpServer.Start();
+#if UNITY_EDITOR_WIN
+            TaskbarFlash.CaptureWindowHandle();
+#endif
             ClaudeCodeProcess.SendMessage(userText, _sessionId, McpServer.Port);
             Repaint();
         }
@@ -900,6 +989,9 @@ namespace UnityEli.Editor
                 SessionHistory.ActiveSessionId = _sessionId;
             }
 
+#if UNITY_EDITOR_WIN
+            TaskbarFlash.FlashIfNotFocused();
+#endif
             Repaint();
         }
 
@@ -1115,6 +1207,9 @@ namespace UnityEli.Editor
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
 
+            if (_markdownCache.TryGetValue(text, out var cached))
+                return cached;
+
             var sb = new StringBuilder();
             var lines = text.Split('\n');
 
@@ -1139,7 +1234,14 @@ namespace UnityEli.Editor
                     sb.Append(indent + ApplyInlineMarkdown(trimmed));
             }
 
-            return sb.ToString();
+            var result = sb.ToString();
+
+            // Cap cache size to avoid unbounded memory growth
+            if (_markdownCache.Count > 500)
+                _markdownCache.Clear();
+            _markdownCache[text] = result;
+
+            return result;
         }
 
         private static string ApplyInlineMarkdown(string text)

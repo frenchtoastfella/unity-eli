@@ -1,0 +1,27 @@
+{
+  "name": "meshy_remesh",
+  "description": "Remesh a 3D model using Meshy.ai to optimize topology and polygon count. Accepts either a Meshy task ID from a previous generation or a public URL to a 3D model file (.glb, .gltf, .obj, .fbx, .stl). After calling, poll with meshy_check_task using source='remesh' until complete, then download with meshy_download_model. Costs 5 Meshy.ai credits. Use this to clean up mesh topology or reduce polycount of generated models.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "input_task_id": {
+        "type": "string",
+        "description": "ID of a completed Meshy text-to-3D or image-to-3D task to remesh. Provide this OR model_url, not both."
+      },
+      "model_url": {
+        "type": "string",
+        "description": "Public URL to a 3D model file to remesh. Provide this OR input_task_id, not both."
+      },
+      "topology": {
+        "type": "string",
+        "enum": ["triangle", "quad"],
+        "description": "Target mesh topology. 'triangle' for decimated mesh, 'quad' for quad-dominant mesh (better for deformation/animation). Default: 'triangle'."
+      },
+      "target_polycount": {
+        "type": "integer",
+        "description": "Target polygon count (100-300000). Default: 30000. Use the same budget rules as meshy_generate_model: hero assets up to 100000, environment up to 10000, props up to 3000."
+      }
+    },
+    "required": []
+  }
+}

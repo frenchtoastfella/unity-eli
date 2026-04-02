@@ -1,0 +1,30 @@
+{
+  "name": "meshy_retexture",
+  "description": "Retexture an existing 3D model using Meshy.ai. Applies new textures to existing geometry based on a text prompt or reference image. Works on models from previous Meshy tasks (text-to-3D, remesh) or external model URLs. Preserves original UVs by default. After calling, poll with meshy_check_task using source='retexture' until complete, then download with meshy_download_model. Costs 10 Meshy.ai credits.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "input_task_id": {
+        "type": "string",
+        "description": "ID of a completed Meshy task (text-to-3D preview/refine, remesh) to retexture. Provide this OR model_url, not both."
+      },
+      "model_url": {
+        "type": "string",
+        "description": "Public URL to a 3D model file (.glb, .gltf, .obj, .fbx, .stl) to retexture. Provide this OR input_task_id, not both."
+      },
+      "text_style_prompt": {
+        "type": "string",
+        "description": "Text description of desired texture style, up to 600 characters. e.g. 'weathered stone with moss growing in cracks'. Provide this OR image_style_url."
+      },
+      "image_style_url": {
+        "type": "string",
+        "description": "URL to a reference image (.jpg, .png) for texture style. Provide this OR text_style_prompt."
+      },
+      "enable_pbr": {
+        "type": "boolean",
+        "description": "Generate PBR texture maps (metallic, roughness, normal) in addition to base color. Default: true."
+      }
+    },
+    "required": []
+  }
+}

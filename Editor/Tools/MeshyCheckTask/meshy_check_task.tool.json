@@ -1,0 +1,19 @@
+{
+  "name": "meshy_check_task",
+  "description": "Check the status of a Meshy.ai task (text-to-3D, remesh, or retexture). Returns the current status (PENDING, IN_PROGRESS, SUCCEEDED, FAILED). When a preview task succeeds, call meshy_generate_model with refine_task_id to add textures. When a refine, remesh, or retexture task succeeds, call meshy_download_model to download the result. If still in progress, wait ~10 seconds and check again.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "description": "The task ID returned by meshy_generate_model, meshy_remesh, or meshy_retexture."
+      },
+      "source": {
+        "type": "string",
+        "enum": ["text-to-3d", "remesh", "retexture"],
+        "description": "Which API the task belongs to. Default: 'text-to-3d'. Use 'remesh' for meshy_remesh tasks, 'retexture' for meshy_retexture tasks."
+      }
+    },
+    "required": ["task_id"]
+  }
+}

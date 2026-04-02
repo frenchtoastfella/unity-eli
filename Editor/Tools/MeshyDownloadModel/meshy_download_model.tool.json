@@ -1,0 +1,28 @@
+{
+  "name": "meshy_download_model",
+  "description": "Download a completed Meshy.ai 3D model and its textures to the Unity project. Only call this after meshy_check_task returns SUCCEEDED. Downloads the model file and any texture maps to Assets/Meshes/Generated/. The asset is imported automatically after download.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "description": "The task ID of a SUCCEEDED Meshy task."
+      },
+      "source": {
+        "type": "string",
+        "enum": ["text-to-3d", "remesh", "retexture"],
+        "description": "Which API the task belongs to. Default: 'text-to-3d'. Use 'remesh' for meshy_remesh tasks, 'retexture' for meshy_retexture tasks."
+      },
+      "format": {
+        "type": "string",
+        "enum": ["fbx", "glb", "obj"],
+        "description": "Output format. Default: 'fbx'. FBX is natively supported by Unity. GLB requires a GLTF importer package."
+      },
+      "filename": {
+        "type": "string",
+        "description": "Custom filename without extension. Default: auto-generated from the model name or task ID."
+      }
+    },
+    "required": ["task_id"]
+  }
+}

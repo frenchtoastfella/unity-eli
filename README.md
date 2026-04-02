@@ -41,7 +41,7 @@ When you open the window for the first time (no existing session):
 - **No `Assets/README.md`**: Eli introduces itself and asks about your game — type, 2D/3D, platforms, core mechanics, planned features. Once you answer, it creates `README.md` for you.
 - **`Assets/README.md` exists**: Eli reads it, introduces itself, and asks what to work on first.
 
-## Available Tools (47)
+## Available Tools (55)
 
 ### Inspection & Query
 | Tool | Description |
@@ -57,10 +57,11 @@ When you open the window for the first time (no existing session):
 ### File & Script Management
 | Tool | Description |
 |---|---|
-| `read_file` | Read the contents of a project file |
 | `create_script` | Create a new C# script |
-| `edit_script` | Overwrite an existing C# script with new content |
+| `edit_script` | Edit a script via find/replace or full rewrite |
 | `refresh_assets` | Trigger AssetDatabase.Refresh() to reimport assets and compile scripts |
+
+> **Note:** File reading, writing, and searching are handled by Claude Code's native tools (Read, Write, Edit, Glob, Grep) which are pre-allowed automatically.
 
 ### Asset & Folder Management
 | Tool | Description |
@@ -123,11 +124,13 @@ When you open the window for the first time (no existing session):
 |---|---|
 | `add_event_listener` | Wire a persistent UnityEvent listener (e.g. Button.onClick) to a target method |
 
-### Rendering
+### Rendering & Materials
 | Tool | Description |
 |---|---|
 | `set_renderer_color` | Set a renderer's material color (creates a URP flat-color material) |
 | `set_skybox` | Set the scene skybox material |
+| `create_material` | Create a Material asset with a specified shader (defaults to URP/Lit) |
+| `set_material_property` | Set shader properties (texture, color, float, int, vector, keyword) on a Material |
 
 ### Project Settings
 | Tool | Description |
@@ -152,7 +155,23 @@ When you open the window for the first time (no existing session):
 ### Play Mode
 | Tool | Description |
 |---|---|
-| `play_mode` | Enter, exit, pause, or check Play mode status |
+| `play_mode` | Enter, exit, pause, or check Play mode and compilation status |
+
+### Batch Execution
+| Tool | Description |
+|---|---|
+| `batch_execute` | Execute multiple tool calls in a single MCP round trip (much faster for multi-step operations) |
+
+### Meshy.ai 3D Model Generation
+| Tool | Description |
+|---|---|
+| `meshy_generate_model` | Start a text-to-3D generation (preview mesh or refined textures) |
+| `meshy_check_task` | Poll task status for any Meshy operation |
+| `meshy_download_model` | Download a completed model + textures to `Assets/Meshes/Generated/` |
+| `meshy_remesh` | Optimize a model's topology and polycount (5 credits) |
+| `meshy_retexture` | Apply new textures to existing geometry via text prompt or reference image (10 credits) |
+
+> **Note:** Meshy tools require an API key configured in `Preferences > Unity Eli`. They are hidden from Claude when no key is set. Each generation costs Meshy credits.
 
 ## Architecture
 
@@ -165,6 +184,8 @@ Packages/com.frenchtoastfella.unityeli/Editor/
 ├── JsonHelper.cs           # Lightweight JSON utilities (no external deps)
 ├── EliToolHelpers.cs       # Shared helpers: FindGameObject, ResolveType, TrySetPropertyValue
 ├── UnityEliSettings.cs     # Project Settings page
+├── MeshyApiClient.cs       # HTTP client for Meshy.ai text-to-3D API (v2)
+├── TaskbarFlash.cs         # Windows taskbar flash notification on response
 └── Tools/
     ├── IEliTool.cs         # Tool interface
     ├── ToolRegistry.cs     # Reflection-based tool discovery and execution
@@ -176,7 +197,7 @@ Packages/com.frenchtoastfella.unityeli/Editor/
 
 ### How It Works
 
-Unity Eli starts a local HTTP server (MCP protocol) that exposes 47 editor tools. When you send a message, it spawns `claude -p` as a subprocess with `--mcp-config` pointing at the local server. Claude Code connects to the server, discovers available tools via `tools/list`, calls them as needed, and streams its response back. The `session_id` is persisted across messages and domain reloads so conversations continue naturally.
+Unity Eli starts a local HTTP server (MCP protocol) that exposes 55 editor tools. When you send a message, it spawns `claude -p` as a subprocess. Claude Code auto-discovers the MCP server via `.mcp.json` in the project root, queries available tools via `tools/list`, calls them as needed, and streams its response back. Claude Code's native file tools (Read, Write, Edit, Glob, Grep) are also pre-allowed for file I/O. The `session_id` is persisted across messages and domain reloads so conversations continue naturally.
 
 ### Adding Custom Tools
 
@@ -230,12 +251,12 @@ Open **Preferences > Unity Eli**:
 - **Open Claude Login** — opens a terminal and runs `claude auth login`
 - **Base Port** — the starting port for the local MCP server (default: 47880, tries up to 47889)
 - **Model ID** — optional override (e.g. `claude-opus-4-6`); leave blank to use Claude Code's default
+- **Meshy.ai API Key** — required for 3D model generation tools; get one at [app.meshy.ai](https://app.meshy.ai)
 
 ## Known Limitations
 
-- **Script editing is full-file replacement** — `edit_script` replaces the entire file. Claude must rewrite the full script even for small changes.
 - **GameObject lookup is by name** — tools find GameObjects by name; if multiple share a name, the first match is used.
-- **No visual preview** — Claude cannot see the Game or Scene view; it relies on hierarchy data, component info, and console logs.
+- **No visual preview** — Claude cannot see the Game or Scene view; it relies on hierarchy data, component info, and console logs (use `capture_screenshot` to give Claude a visual snapshot).
 - **`manage_scene` operates on the active scene** — scene tools work on currently open/active scenes. Multi-scene workflows are supported via `load_additive`.
 - **`configure_animator_controller` is Layer 0 only** — multi-layer Animator setups require manual editing.
 - **No ShaderGraph/VFX Graph/Timeline tools** — no public C# API for ShaderGraph/VFX; Timeline tools are deferred. Claude can still inspect these files via `read_file`.

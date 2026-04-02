@@ -4,6 +4,24 @@ All notable changes to this package will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+## [1.3.0] - 2026-04-02
+
+### Added
+- **Meshy.ai 3D model generation** — 5 new tools (`meshy_generate_model`, `meshy_check_task`, `meshy_download_model`, `meshy_remesh`, `meshy_retexture`) for AI-powered text-to-3D generation, texturing, remeshing, and retexturing. Requires a Meshy API key configured in Preferences. Tools are automatically hidden from Claude when no key is set.
+- **`create_material` tool** — create Material assets with a specified shader (defaults to URP/Lit).
+- **`set_material_property` tool** — set shader properties (texture, color, float, int, vector, keyword) on existing materials.
+- **Taskbar flash** (Windows) — the Unity Editor taskbar button flashes when Claude responds and Unity is not focused.
+- **Chat virtualization** — only the last 8 messages are rendered by default, with a "Show earlier messages" button. Improves performance in long conversations.
+- **Markdown rendering cache** — repeated renders of the same message text are cached for faster repaints.
+- **Tool call grouping** — consecutive identical tool calls (e.g. 5× `meshy_check_task`) are collapsed into a single summary line.
+- **Meshy API key** setting in `Preferences > Unity Eli` with inline help and credit-cost warnings.
+- `EliToolHelpers.EnsureDirectoryExists()` — shared helper for creating nested asset folders.
+
+### Changed
+- **Native file tools** — Claude Code's built-in file tools (Read, Write, Edit, Glob, Grep) are now allowed via `--allowedTools`, replacing the MCP-based `read_file` and `find_file` for file I/O. Script creation and editing still use MCP tools for Unity-specific refresh behavior.
+- MCP server hides `meshy_*` tools when no Meshy API key is configured, keeping the tool list clean.
+- CLAUDE.md updated with Meshy integration docs, native file tool architecture, and revised tool count.
+
 ## [1.2.0] - 2026-03-28
 
 ### Added

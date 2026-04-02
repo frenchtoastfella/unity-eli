@@ -407,5 +407,25 @@ namespace UnityEli.Editor
             }
             return names.Count > 0 ? string.Join(", ", names) : "(none)";
         }
+
+        /// <summary>
+        /// Ensures all folders in an asset path exist, creating them via AssetDatabase.CreateFolder.
+        /// e.g. "Assets/Meshes/Generated" creates "Meshes" then "Generated" under Assets.
+        /// </summary>
+        public static void EnsureDirectoryExists(string assetPath)
+        {
+            if (AssetDatabase.IsValidFolder(assetPath))
+                return;
+
+            var parts = assetPath.Split('/');
+            var current = parts[0]; // "Assets"
+            for (int i = 1; i < parts.Length; i++)
+            {
+                var next = current + "/" + parts[i];
+                if (!AssetDatabase.IsValidFolder(next))
+                    AssetDatabase.CreateFolder(current, parts[i]);
+                current = next;
+            }
+        }
     }
 }

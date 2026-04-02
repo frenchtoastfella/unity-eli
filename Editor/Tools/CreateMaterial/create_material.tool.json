@@ -1,0 +1,18 @@
+{
+  "name": "create_material",
+  "description": "Create a new Material asset with a specified shader. The material is saved to the given asset path. Use set_material_property afterwards to assign textures, colors, and other shader properties. NAMING CONVENTION: Material filenames MUST use the M_ prefix in PascalCase (e.g. M_BrickWall.mat, M_Character_Skin.mat, M_TreasureChest.mat). Never use lowercase or omit the M_ prefix.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "asset_path": {
+        "type": "string",
+        "description": "Path where the material will be saved. Must end with '.mat' and use M_ prefix naming (e.g. 'Assets/Materials/M_TreasureChest.mat'). Parent directories are created automatically."
+      },
+      "shader": {
+        "type": "string",
+        "description": "Full shader name. Default: 'Universal Render Pipeline/Lit'. Other common options: 'Universal Render Pipeline/Unlit', 'Universal Render Pipeline/Simple Lit'."
+      }
+    },
+    "required": ["asset_path"]
+  }
+}

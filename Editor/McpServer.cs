@@ -40,6 +40,7 @@ namespace UnityEli.Editor
         private static CancellationTokenSource _cts;
         private static readonly object _lock = new object();
         private static readonly ConcurrentQueue<PendingToolCall> _queue = new ConcurrentQueue<PendingToolCall>();
+        private static volatile bool _hasMeshyApiKey;
 
         static McpServer()
         {
@@ -79,6 +80,7 @@ namespace UnityEli.Editor
 
                 _cts = new CancellationTokenSource();
                 IsRunning = true;
+                _hasMeshyApiKey = !string.IsNullOrEmpty(UnityEliSettings.MeshyApiKey);
 
                 EditorApplication.update += DrainQueue;
 
@@ -304,12 +306,17 @@ namespace UnityEli.Editor
         private static string MakeToolsListResponse(int id)
         {
             var defs = ToolRegistry.GetToolDefinitions();
+            var hideMeshy = !_hasMeshyApiKey;
             var sb = new StringBuilder();
             sb.Append("{\"tools\":[");
 
             bool first = true;
             foreach (var def in defs)
             {
+                // Hide Meshy tools when no API key is configured
+                if (hideMeshy && def.name.StartsWith("meshy_"))
+                    continue;
+
                 if (!first) sb.Append(",");
                 first = false;
                 sb.Append(BuildMcpToolJson(def));
@@ -367,6 +374,9 @@ namespace UnityEli.Editor
 
         private static void DrainQueue()
         {
+            // Refresh on main thread so background threads can read it safely
+            _hasMeshyApiKey = !string.IsNullOrEmpty(UnityEliSettings.MeshyApiKey);
+
             bool anyRefresh = false;
 
             while (_queue.TryDequeue(out var pending))

@@ -1,0 +1,27 @@
+{
+  "name": "set_material_property",
+  "description": "Set a shader property on a Material asset. Supports textures, colors, floats, ints, vectors, and shader keywords. Use get_asset_property to list available properties first if unsure of property names. Common URP/Lit properties: _BaseMap (albedo texture), _BumpMap (normal map), _MetallicGlossMap (metallic texture), _BaseColor (tint color), _Metallic (float 0-1), _Smoothness (float 0-1).",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "asset_path": {
+        "type": "string",
+        "description": "Path to the .mat file, e.g. 'Assets/Materials/M_TreasureChest.mat'."
+      },
+      "property": {
+        "type": "string",
+        "description": "Shader property name, e.g. '_BaseMap', '_BaseColor', '_Metallic', '_BumpMap', '_Smoothness'."
+      },
+      "value": {
+        "type": "string",
+        "description": "Value to set. Interpretation depends on type: texture = asset path (e.g. 'Assets/Textures/T_Albedo.png'), color = 'r,g,b' or 'r,g,b,a' (0-1 floats), float = number, int = number, vector = 'x,y,z,w', keyword = 'enable' or 'disable'."
+      },
+      "type": {
+        "type": "string",
+        "enum": ["texture", "color", "float", "int", "vector", "keyword"],
+        "description": "Property type. Auto-detected from property name if omitted: names containing 'Map' or 'Tex' → texture, 'Color' → color, otherwise → float."
+      }
+    },
+    "required": ["asset_path", "property", "value"]
+  }
+}

@@ -25,13 +25,14 @@ All code lives under `Editor/` (editor-only, not included in builds):
 - `EliToolHelpers.cs` — Shared static helpers used by tools: `FindGameObject`, `ResolveType`, `ParseVector`, `TrySetPropertyValue`, `ReadPropertyValue`, `FindProperty`, `ListProperties`. All new tools should use these instead of duplicating logic.
 - `JsonHelper.cs` — Shared JSON parsing/building utilities (no external dependencies).
 - `UnityEliSettings.cs` — Settings UI (`Preferences > Unity Eli`) and `EditorPrefs` storage for MCP base port and optional model override.
-- `Tools/` — 46 editor tools Claude Code can invoke via MCP.
+- `Tools/` — 51 MCP tools for Unity editor operations that require UnityEditor/UnityEngine APIs. File I/O (reading, writing, editing, searching files) is handled by Claude Code's native tools (Read, Write, Edit, Glob, Grep) which are pre-allowed via the `--allowedTools` flag.
+- `MeshyApiClient.cs` — HTTP client for Meshy.ai text-to-3D API (v2). Used by the three Meshy tools.
 
 ## How a conversation turn works
 
 1. User types in `UnityEliWindow` and hits Send.
 2. `McpServer` starts (if not running) on an auto-selected port in range `47880–47889`.
-3. `ClaudeCodeProcess` spawns: `claude -p --output-format stream-json --verbose --mcp-config <tempfile> --allowedTools "mcp__unity__*" [--model <id>] [--resume <session_id>]`
+3. `ClaudeCodeProcess` spawns: `claude -p --output-format stream-json --verbose --allowedTools "mcp__unity__*,Read,Write,Edit,Glob,Grep" [--model <id>] [--resume <session_id>]`
 4. User prompt is written to subprocess stdin; stdin is closed so Claude reads to EOF.
 5. Claude Code connects to the MCP server, calls `tools/list` to discover Unity tools, then calls tools as needed.
 6. `McpServer` receives `tools/call` requests, queues them for the Unity main thread, executes `IEliTool.Execute()`, returns results to Claude Code.
@@ -60,7 +61,25 @@ When adding new tools, create a subfolder in `Tools/` with both `.tool.json` and
 
 The `input_schema` key in `.tool.json` is automatically translated to `inputSchema` when served over MCP.
 
-Tools cover: inspection, file/script ops, asset management, scene management, tags/layers, GameObject lifecycle, components, transforms, asset properties, UI, rendering, project settings (player/quality/physics/time), prefab management, animator controllers, asset refresh/compilation, build settings, event wiring, screenshots, and play mode control (47 tools total).
+MCP tools cover: inspection, asset management, scene management, tags/layers, GameObject lifecycle, components, transforms, asset properties, UI, rendering, project settings (player/quality/physics/time), prefab management, animator controllers, asset refresh/compilation, build settings, event wiring, screenshots, play mode control, and Meshy.ai 3D model generation. File/script reading, writing, editing, and searching are delegated to Claude Code's native file tools — after creating or editing scripts, Claude Code should call `refresh_assets` (with `wait_for_compilation=true`) to trigger Unity recompilation.
+
+## Meshy.ai Integration
+
+Five tools provide AI-powered 3D model generation and processing via Meshy.ai:
+
+1. `meshy_generate_model` — Creates a preview (mesh) or refine (texturing) task. Costs credits.
+2. `meshy_check_task` — Polls task status (text-to-3D, remesh, or retexture). Returns next-step guidance based on stage.
+3. `meshy_download_model` — Downloads completed model + textures to `Assets/Meshes/Generated/`.
+4. `meshy_remesh` — Remeshes a model to optimize topology and polycount (5 credits).
+5. `meshy_retexture` — Applies new textures to existing geometry via text prompt or reference image (10 credits). Works on any completed Meshy task or external model URL.
+
+**Workflow:** generate (preview) → poll → generate (refine) → poll → download. Optionally remesh and/or retexture after download.
+
+Two material tools support the post-download workflow:
+- `create_material` — Creates a Material asset with a specified shader (defaults to URP/Lit).
+- `set_material_property` — Sets shader properties (textures, colors, floats) on a Material.
+
+Requires a Meshy API key configured in `Preferences > Unity Eli`. The generate tool's description instructs Claude to ask user confirmation before using it unprompted (credit cost protection). Meshy tools are hidden from Claude when no API key is configured.
 
 ## Domain reload behaviour
 

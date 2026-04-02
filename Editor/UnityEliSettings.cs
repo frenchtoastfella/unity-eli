@@ -32,6 +32,7 @@ namespace UnityEli.Editor
         private const string ToolPermissionPref = "UnityEli_ToolPermission";
         private const string InstructionsFilePathPref = "UnityEli_InstructionsFilePath";
         private const string PlayModeErrorReportPref = "UnityEli_PlayModeErrorReport";
+        private const string MeshyApiKeyPref = "UnityEli_MeshyApiKey";
 
         /// <summary>
         /// Base port for the MCP HTTP server. If this port is taken, subsequent ports are tried.
@@ -68,6 +69,15 @@ namespace UnityEli.Editor
         {
             get => EditorPrefs.GetBool(PlayModeErrorReportPref, true);
             set => EditorPrefs.SetBool(PlayModeErrorReportPref, value);
+        }
+
+        /// <summary>
+        /// Meshy.ai API key for 3D model generation. Get one at https://app.meshy.ai
+        /// </summary>
+        public static string MeshyApiKey
+        {
+            get => EditorPrefs.GetString(MeshyApiKeyPref, "");
+            set => EditorPrefs.SetString(MeshyApiKeyPref, value);
         }
 
         /// <summary>
@@ -253,7 +263,7 @@ namespace UnityEli.Editor
         private static readonly string[] AllEditorPrefsKeys =
         {
             McpBasePortPref, SelectedModelIdPref, CachedModelsPref,
-            ToolPermissionPref, InstructionsFilePathPref, PlayModeErrorReportPref,
+            ToolPermissionPref, InstructionsFilePathPref, PlayModeErrorReportPref, MeshyApiKeyPref,
             "UnityEli_SessionIndex", "UnityEli_ActiveSessionId",
             "UnityEli_SetupCompleted",
         };
@@ -643,6 +653,10 @@ namespace UnityEli.Editor
 
             // Model selection
             DrawModelSection();
+            EditorGUILayout.Space(10);
+
+            // Meshy.ai
+            DrawMeshySection();
             EditorGUILayout.Space(20);
 
             // Uninstall
@@ -823,6 +837,28 @@ namespace UnityEli.Editor
                     "No models loaded yet. Click 'Refresh Models' or open the Unity Eli window to auto-fetch.",
                     MessageType.Info);
             }
+
+            EditorGUI.indentLevel--;
+        }
+
+        private static void DrawMeshySection()
+        {
+            EditorGUILayout.LabelField("Meshy.ai Integration", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+
+            EditorGUILayout.HelpBox(
+                "Meshy.ai provides AI-powered 3D model generation from text prompts. " +
+                "An API key is required. Get one at https://app.meshy.ai\n\n" +
+                "Each generation costs credits (5-20 for mesh, 10 for texturing).",
+                MessageType.Info);
+
+            var currentKey = UnityEliSettings.MeshyApiKey;
+            var newKey = EditorGUILayout.PasswordField("API Key", currentKey);
+            if (newKey != currentKey)
+                UnityEliSettings.MeshyApiKey = newKey;
+
+            if (string.IsNullOrEmpty(currentKey))
+                EditorGUILayout.HelpBox("No API key set. Meshy tools will not be available to Eli.", MessageType.Warning);
 
             EditorGUI.indentLevel--;
         }
