@@ -2,6 +2,8 @@
 
 An AI assistant embedded directly in the Unity Editor. Unity Eli uses **Claude Code CLI** as its backend. It can take real actions in your project: creating scripts, modifying scenes, adjusting components, reading console logs, and more — all through natural language.
 
+[![Unity Eli Demo](https://img.youtube.com/vi/dngl2Tv9f-c/maxresdefault.jpg)](https://youtu.be/dngl2Tv9f-c)
+
 ## Prerequisites
 
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed: `npm install -g @anthropic-ai/claude-code`
