@@ -86,7 +86,7 @@ namespace UnityEli.Editor
         /// </summary>
         public static string InstructionsFilePath
         {
-            get => EditorPrefs.GetString(InstructionsFilePathPref, "Assets/UnityEli/.eli-instructions");
+            get => EditorPrefs.GetString(InstructionsFilePathPref, ".eli-instructions");
             set => EditorPrefs.SetString(InstructionsFilePathPref, value);
         }
 
@@ -248,6 +248,10 @@ namespace UnityEli.Editor
 
             try
             {
+                var directory = Path.GetDirectoryName(absolutePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
                 File.WriteAllText(absolutePath, content ?? InstructionsTemplate, new UTF8Encoding(false));
                 Debug.Log($"[Unity Eli] Created instructions file: {absolutePath}");
             }
@@ -284,7 +288,7 @@ namespace UnityEli.Editor
                 "\u2022 Delete chat history (Library/UnityEli/)\n" +
                 "\u2022 Clear all Unity Eli preferences\n" +
                 "\u2022 Delete temp files\n" +
-                "\u2022 Delete the Assets/UnityEli/ folder (includes .eli-instructions)\n\n" +
+                "\u2022 Delete .eli-instructions from the project root\n\n" +
                 "This cannot be undone.",
                 "Uninstall", "Cancel"))
             {
@@ -305,14 +309,10 @@ namespace UnityEli.Editor
             // 3. Delete .mcp.json
             TryDeleteFile(Path.Combine(projectRoot, ".mcp.json"));
 
-            // 4. Delete .eli-instructions if stored outside Assets/UnityEli/
+            // 4. Delete .eli-instructions
             var instructionsPath = ResolveInstructionsFilePath();
             if (instructionsPath != null)
-            {
-                var unityEliDir = Path.GetFullPath(Path.Combine(Application.dataPath, "UnityEli"));
-                if (!instructionsPath.StartsWith(unityEliDir))
-                    TryDeleteFile(instructionsPath);
-            }
+                TryDeleteFile(instructionsPath);
 
             // 5. Delete Library/UnityEli/
             var libraryDir = Path.Combine(projectRoot, "Library", "UnityEli");
@@ -343,10 +343,12 @@ namespace UnityEli.Editor
             // 8. Clear SessionState
             SimpleSessionState.Clear();
 
-            // 9. Delete Assets/UnityEli/ (triggers domain reload)
-            Debug.Log("[Unity Eli] Removing package folder...");
-            AssetDatabase.DeleteAsset("Assets/UnityEli");
-            AssetDatabase.Refresh();
+            // 9. Clean up legacy Assets/UnityEli/ folder if it exists (from older installs)
+            if (AssetDatabase.IsValidFolder("Assets/UnityEli"))
+            {
+                AssetDatabase.DeleteAsset("Assets/UnityEli");
+                AssetDatabase.Refresh();
+            }
 
             Debug.Log("[Unity Eli] Uninstall complete.");
         }

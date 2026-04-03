@@ -100,4 +100,4 @@ MCP HTTP requests arrive on a background thread. Tool execution always happens o
 
 ## Project Instructions
 
-Users can create a `.eli-instructions` file with project-specific rules and conventions (naming, coding standards, restrictions). When present, its contents are appended to Claude's system prompt via `--append-system-prompt-file`. The default location is `Assets/UnityEli/.eli-instructions` so it lives with the package and is cleaned up on uninstall. The file path is configurable in `Preferences > Unity Eli` (stored in `EditorPrefs`). If the file does not exist, the feature is silently skipped.
+Users can create a `.eli-instructions` file with project-specific rules and conventions (naming, coding standards, restrictions). When present, its contents are appended to Claude's system prompt via `--append-system-prompt-file`. The default location is `.eli-instructions` in the project root (next to `.mcp.json`). The file path is configurable in `Preferences > Unity Eli` (stored in `EditorPrefs`). If the file does not exist, the feature is silently skipped.
